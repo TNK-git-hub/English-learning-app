@@ -1,2 +1,2 @@
 # English-learning-app
-This is a project of developing an English learnning application 
+This is a project to develop an English learning application 
