@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EngLearn - Master English</title>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app-container" class="app-container">
+        <!-- SPA views will be injected here by app.js -->
+    </div>
+
+    <!-- ========== LOGIN TEMPLATE ========== -->
+    <template id="login-template">
+        <div class="top-bar">
+            <div class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                EngVocabLearn
+            </div>
+            <div class="top-bar-right">
+            </div>
+        </div>
+        <div class="main-wrapper" id="login-view">
+            <div class="header-icon" style="display:none;"></div>
+            <h1 class="page-title">Welcome Back</h1>
+            <p class="page-subtitle" style="margin-bottom: 24px;">Log in to continue learning</p>
+            
+            <div class="auth-card">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="login-email" placeholder="alex@example" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="login-password" placeholder="1234" required>
+                            <i class="fa-regular fa-eye input-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-between" style="margin-bottom: 24px;">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox"> Remember me
+                        </label>
+                        <a href="#" class="link-blue" style="margin: 0; font-size: 13px;">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Log In <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
+                </form>
+                
+                <div class="bottom-link">
+                    Don't have an account? <a href="#" id="go-to-register">Register account</a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ========== REGISTER TEMPLATE ========== -->
+    <template id="register-template">
+        <div class="top-bar">
+            <div class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                EngVocabLearn
+            </div>
+            <div class="top-bar-right">
+                <span class="text-gray">Already have an account?</span>
+                <a href="#" id="go-to-login" class="link-blue">Login</a>
+            </div>
+        </div>
+        <div class="main-wrapper" id="register-view">
+            <h1 class="page-title">Start your journey</h1>
+            <p class="page-subtitle">Master English with simple, daily habits.</p>
+            
+            <div class="auth-card">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="reg-email" placeholder="email@example.com" required>
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="reg-password" placeholder="1234" required>
+                        </div>
+                        <p class="hint-text">Must be at least 8 characters long.</p>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label>Confirm Password</label>
+                        <div class="input-wrapper" id="reg-confirm-wrapper">
+                            <input type="password" id="reg-confirm" placeholder="1234" required>
+                        </div>
+                        <p class="error-text" id="reg-confirm-error" style="display: none;"><i class="fa-solid fa-circle-exclamation"></i> Passwords do not match</p>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Register <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>
