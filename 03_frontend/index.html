@@ -7,6 +7,8 @@
     <title>EngLearn - Master English</title>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
@@ -18,7 +20,8 @@
     <template id="login-template">
         <div class="top-bar">
             <div class="logo">
-                <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                        style="transform: rotate(-45deg);"></i></span>
                 EngVocabLearn
             </div>
             <div class="top-bar-right">
@@ -28,7 +31,7 @@
             <div class="header-icon" style="display:none;"></div>
             <h1 class="page-title">Welcome Back</h1>
             <p class="page-subtitle" style="margin-bottom: 24px;">Log in to continue learning</p>
-            
+
             <div class="auth-card">
                 <form id="login-form">
                     <div class="form-group">
@@ -44,17 +47,18 @@
                             <i class="fa-regular fa-eye input-icon"></i>
                         </div>
                     </div>
-                    
+
                     <div class="flex-between" style="margin-bottom: 24px;">
                         <label class="checkbox-wrapper">
                             <input type="checkbox"> Remember me
                         </label>
                         <a href="#" class="link-blue" style="margin: 0; font-size: 13px;">Forgot password?</a>
                     </div>
-                    
-                    <button type="submit" class="btn-primary">Log In <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
+
+                    <button type="submit" class="btn-primary">Log In <i class="fa-solid fa-arrow-right"
+                            style="margin-left: 8px;"></i></button>
                 </form>
-                
+
                 <div class="bottom-link">
                     Don't have an account? <a href="#" id="go-to-register">Register account</a>
                 </div>
@@ -66,7 +70,8 @@
     <template id="register-template">
         <div class="top-bar">
             <div class="logo">
-                <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                        style="transform: rotate(-45deg);"></i></span>
                 EngVocabLearn
             </div>
             <div class="top-bar-right">
@@ -77,7 +82,7 @@
         <div class="main-wrapper" id="register-view">
             <h1 class="page-title">Start your journey</h1>
             <p class="page-subtitle">Master English with simple, daily habits.</p>
-            
+
             <div class="auth-card">
                 <form id="register-form">
                     <div class="form-group">
@@ -99,12 +104,268 @@
                         <div class="input-wrapper" id="reg-confirm-wrapper">
                             <input type="password" id="reg-confirm" placeholder="1234" required>
                         </div>
-                        <p class="error-text" id="reg-confirm-error" style="display: none;"><i class="fa-solid fa-circle-exclamation"></i> Passwords do not match</p>
+                        <p class="error-text" id="reg-confirm-error" style="display: none;"><i
+                                class="fa-solid fa-circle-exclamation"></i> Passwords do not match</p>
                     </div>
-                    
-                    <button type="submit" class="btn-primary">Register <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
+
+                    <button type="submit" class="btn-primary">Register <i class="fa-solid fa-arrow-right"
+                            style="margin-left: 8px;"></i></button>
                 </form>
             </div>
+        </div>
+    </template>
+
+    <!-- ========== ARTICLES TEMPLATE ========== -->
+    <template id="articles-template">
+        <div class="articles-layout">
+            <!-- Header Navigation -->
+            <header class="main-header">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
+                    EngVocabLearn
+                </div>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search articles...">
+                </div>
+                <nav class="main-nav">
+                    <a href="#" class="active">Articles</a>
+                    <a href="#">Library</a>
+                    <a href="#">Quiz</a>
+                    <a href="#">Dashboard</a>
+                </nav>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Sidebar Filters -->
+                <aside class="sidebar-filters">
+                    <div class="filter-header">
+                        <h2>Filters</h2>
+                        <button class="btn-text">Reset All</button>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>TOPICS</h3>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" value="Sport">
+                            <span class="checkmark"></span>
+                            Sport
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" value="Business">
+                            <span class="checkmark"></span>
+                            Business
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" value="Culture">
+                            <span class="checkmark"></span>
+                            Culture
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" value="Science">
+                            <span class="checkmark"></span>
+                            Science
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" value="Lifestyle">
+                            <span class="checkmark"></span>
+                            Lifestyle
+                        </label>
+                        <i class="fa-solid fa-chevron-down expand-icon"></i>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>DIFFICULTY LEVEL</h3>
+                        <label class="custom-radio">
+                            <input type="radio" name="difficulty" value="Beginner">
+                            <span class="radiomark"></span>
+                            Beginner
+                        </label>
+                        <label class="custom-radio">
+                            <input type="radio" name="difficulty" value="Intermediate">
+                            <span class="radiomark"></span>
+                            Intermediate
+                        </label>
+                        <label class="custom-radio">
+                            <input type="radio" name="difficulty" value="Advanced">
+                            <span class="radiomark"></span>
+                            Advanced
+                        </label>
+                    </div>
+
+                    <button class="btn-primary w-100 apply-btn" style="margin-top: auto; margin-bottom: 20px;">Apply
+                        Filters</button>
+
+
+                </aside>
+
+                <!-- Content Area -->
+                <main class="content-area">
+                    <div class="content-header">
+                        <div class="discover-texts">
+                            <h1>Discover</h1>
+                            <p>Showing 42 articles based on your interests</p>
+                        </div>
+                        <div class="view-toggles">
+                            <button class="active"><i class="fa-solid fa-grip"></i></button>
+                            <button><i class="fa-solid fa-bars"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="active-filters" style="display: none;">
+                        <span class="filter-label">ACTIVE:</span>
+                        <div id="active-tags-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                    </div>
+
+                    <div class="articles-grid">
+                        <!-- Article 1 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1600250644078-d50d03bfa8dc?w=500&q=80"
+                                    alt="Reece James">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Reece James injury: another hamstring injury</h3>
+                                <p>Reece James has suffered the 10th hamstring injury of his career; the...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=33" alt="Alex Rivera">
+                                        <span>Alex Rivera</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 2 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1600250644078-d50d03bfa8dc?w=500&q=80"
+                                    alt="Reece James 2">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Reece James injury: another hamstring injury</h3>
+                                <p>Reece James has suffered the 10th hamstring injury of his career; the...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=33" alt="Alex Rivera">
+                                        <span>Alex Rivera</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 3 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?w=500&q=80"
+                                    alt="Laporta">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Laporta after Barcelona re-election</h3>
+                                <p>Joan Laporta said the door is always open for Lionel Messi to return to B...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=47" alt="Sarah Jenkins">
+                                        <span>Sarah oenkins</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 4 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1508344928928-7165b67de128?w=500&q=80"
+                                    alt="Laporta 2">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Laporta after Barcelona re-election</h3>
+                                <p>Joan Laporta said the door is always open for Lionel Messi to return to B...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=47" alt="Sarah Jenkins">
+                                        <span>Sarah oenkins</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 5 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&q=80"
+                                    alt="Pep Guardiola">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Manchester City need 'perfect game' to get past Real Madrid</h3>
+                                <p>'We can create many chances in m...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=12" alt="Dr. Michael Chen">
+                                        <span>Dr. Michael Chen</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Article 6 -->
+                        <article class="article-card">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&q=80"
+                                    alt="Pep Guardiola 2">
+                            </div>
+                            <div class="card-content">
+                                <span class="category-tag">SPORT</span>
+                                <h3>Manchester City need 'perfect game' to get past Real Madrid</h3>
+                                <p>'We can create many chances in m...</p>
+                                <div class="card-footer">
+                                    <div class="author">
+                                        <img src="https://i.pravatar.cc/150?img=12" alt="Dr. Michael Chen">
+                                        <span>Dr. Michael Chen</span>
+                                    </div>
+                                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="pagination">
+                        <button class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span class="ellipsis">...</span>
+                        <button class="page-btn">12</button>
+                        <button class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </main>
+            </div>
+
+            <footer class="full-footer"
+                style="margin-top: auto; border-radius: 0; padding: 24px 48px; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
+                    <strong style="color: #0f172a;">EngVocabLearn</strong>
+                </div>
+                <div>© 2026 EngVocabLearn. All rights reserved.</div>
+                <div class="footer-links">
+                </div>
+            </footer>
         </div>
     </template>
 
