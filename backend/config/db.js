@@ -1,7 +1,6 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Tạo connection pool (hiệu quả hơn single connection)
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
@@ -9,7 +8,7 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'LearnUp',
     waitForConnections: true,
-    connectionLimit: 10,      // Tối đa 10 kết nối đồng thời
+    connectionLimit: 10,
     queueLimit: 0,
     charset: 'utf8mb4'
 });
