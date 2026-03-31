@@ -39,7 +39,7 @@ def seed():
         # ===== 2. Tạo Articles =====
         articles = [
             {
-                "title": "O I I: another hamstring injury",
+                "title": "DOMIXI: another hamstring injury",
                 "content": "Reece James has suffered the 10th hamstring injury of his career. The Chelsea defender is expected to be out for several months. This continuous string of injuries has raised questions about his long-term career prospects at the highest level of football.",
                 "image_url": "https://images.unsplash.com/photo-1600250644078-d50d03bfa8dc?w=500&q=80",
                 "tags": ["Sport"],
