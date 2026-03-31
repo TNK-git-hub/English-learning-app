@@ -8,7 +8,6 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 def login(request: LoginRequest):
     """
     Login endpoint — hiện tại luôn trả về success (chưa validate).
-    Sau này sẽ thêm bcrypt verify + JWT token.
     """
     return {
         "status": "Success",
