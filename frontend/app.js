@@ -1,3 +1,5 @@
+const API_BASE_URL = 'http://localhost:8001';
+
 document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
 
@@ -23,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appContainer.innerHTML = '';
             appContainer.appendChild(template.content.cloneNode(true));
             attachArticlesEvents();
+            fetchArticles(); // Gọi API lấy articles từ database
         }
     }
 
@@ -39,9 +42,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
+            loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                animateTransition('articles');
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/users/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+
+                    if (data.status === 'Success') {
+                        animateTransition('articles');
+                    } else {
+                        alert(data.message || 'Đăng nhập thất bại');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    alert('Không thể kết nối server. Hãy chắc chắn FastAPI đang chạy trên port 8000.');
+                }
             });
         }
     }
@@ -78,6 +100,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Registration functionality to be implemented!");
             });
         }
+    }
+
+    // ===== Fetch & Render Articles từ Database =====
+    async function fetchArticles() {
+        const grid = document.getElementById('articles-grid');
+        const discoverText = document.querySelector('.discover-texts p');
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/articles`);
+            const data = await res.json();
+
+            if (data.success && data.data.length > 0) {
+                // Xóa loading message
+                grid.innerHTML = '';
+
+                // Cập nhật text hiển thị số articles
+                if (discoverText) {
+                    discoverText.textContent = `Showing ${data.total} articles based on your interests`;
+                }
+
+                // Render từng article card
+                data.data.forEach(article => {
+                    const card = createArticleCard(article);
+                    grid.appendChild(card);
+                });
+
+                // Attach bookmark events cho các cards mới
+                attachBookmarkEvents();
+            } else {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
+                        <i class="fa-solid fa-newspaper" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                        <h3 style="color: #64748b; margin-bottom: 8px;">No articles found</h3>
+                        <p>Run <code>python seed_data.py</code> to add sample articles.</p>
+                    </div>
+                `;
+                if (discoverText) {
+                    discoverText.textContent = 'No articles available';
+                }
+            }
+        } catch (error) {
+            console.error('Fetch articles error:', error);
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    <h3 style="margin-bottom: 8px;">Cannot connect to server</h3>
+                    <p style="color: #94a3b8;">Make sure FastAPI is running on <code>http://localhost:8001</code></p>
+                </div>
+            `;
+        }
+    }
+
+    function createArticleCard(article) {
+        const el = document.createElement('article');
+        el.className = 'article-card';
+
+        // Lấy tag đầu tiên hoặc 'General'
+        const primaryTag = article.tags && article.tags.length > 0 ? article.tags[0] : 'General';
+
+        // Cắt ngắn content cho preview
+        const preview = article.content
+            ? (article.content.length > 100 ? article.content.substring(0, 100) + '...' : article.content)
+            : 'No description available.';
+
+        // Random avatar cho author (tạm thời)
+        const avatarId = Math.floor(Math.random() * 50) + 1;
+
+        el.innerHTML = `
+            <div class="card-img-wrapper">
+                <img src="${article.image_url || 'https://images.unsplash.com/photo-1557683316-973673baf926?w=500&q=80'}" 
+                     alt="${article.title}" 
+                     onerror="this.src='https://images.unsplash.com/photo-1557683316-973673baf926?w=500&q=80'">
+            </div>
+            <div class="card-content">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    ${article.tags.map(tag => `<span class="category-tag">${tag.toUpperCase()}</span>`).join('')}
+                </div>
+                <h3>${article.title}</h3>
+                <p>${preview}</p>
+                <div class="card-footer">
+                    <div class="author">
+                        <img src="https://i.pravatar.cc/150?img=${avatarId}" alt="Author">
+                        <span>EngVocabLearn</span>
+                    </div>
+                    <button class="bookmark-btn"><i class="fa-regular fa-bookmark"></i></button>
+                </div>
+            </div>
+        `;
+
+        return el;
+    }
+
+    function attachBookmarkEvents() {
+        const bookmarkBtns = document.querySelectorAll('.bookmark-btn');
+        bookmarkBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                if (btn.classList.contains('active')) {
+                    btn.innerHTML = '<i class="fa-solid fa-bookmark" style="color: #2563eb;"></i>';
+                } else {
+                    btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
+                }
+            });
+        });
     }
 
     function attachArticlesEvents() {
@@ -156,18 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderActiveFilters();
             });
         }
-
-        const bookmarkBtns = document.querySelectorAll('.bookmark-btn');
-        bookmarkBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-                if (btn.classList.contains('active')) {
-                    btn.innerHTML = '<i class="fa-solid fa-bookmark" style="color: #2563eb;"></i>';
-                } else {
-                    btn.innerHTML = '<i class="fa-regular fa-bookmark"></i>';
-                }
-            });
-        });
     }
 
     function animateTransition(nextView) {
