@@ -9,15 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "port": int(os.getenv("DB_PORT", 3306)),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", "12345"),
-    "database": os.getenv("DB_NAME", "LearnUp"),
-    "charset": "utf8mb4",
-}
-
 
 def seed():
     conn = mysql.connector.connect(**DB_CONFIG)
@@ -43,7 +34,7 @@ def seed():
         # ===== 2. Tạo Articles =====
         articles = [
             {
-                "title": "O I I: another hamstring injury",
+                "title": "tnk: another hamstring injury",
                 "content": "Reece James has suffered the 10th hamstring injury of his career. The Chelsea defender is expected to be out for several months. This continuous string of injuries has raised questions about his long-term career prospects at the highest level of football.",
                 "image_url": "https://images.unsplash.com/photo-1600250644078-d50d03bfa8dc?w=500&q=80",
                 "tags": ["Sport"],
