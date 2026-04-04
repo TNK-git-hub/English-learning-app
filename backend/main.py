@@ -17,7 +17,6 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(articles.router)
 
-
 @app.get("/api/health")
 def health_check():
     return {"status": "OK", "message": "LearnUp API is running (FastAPI)."}
