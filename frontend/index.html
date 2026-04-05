@@ -28,16 +28,17 @@
             </div>
         </div>
         <div class="main-wrapper" id="login-view">
-            <div class="header-icon" style="display:none;"></div>
+            <div class="header-icon"><i class="fa-solid fa-lock-open"></i></div>
             <h1 class="page-title">Welcome Back</h1>
-            <p class="page-subtitle" style="margin-bottom: 24px;">Log in to continue learning</p>
+            <p class="page-subtitle">Log in to continue your learning journey.</p>
 
             <div class="auth-card">
                 <form id="login-form">
                     <div class="form-group">
                         <label>Email Address</label>
                         <div class="input-wrapper">
-                            <input type="email" id="login-email" placeholder="alex@example" required>
+                            <input type="email" id="login-email" placeholder="alex@example.com" required>
+                            <i class="fa-regular fa-envelope input-icon"></i>
                         </div>
                     </div>
                     <div class="form-group">
@@ -80,6 +81,7 @@
             </div>
         </div>
         <div class="main-wrapper" id="register-view">
+            <div class="header-icon"><i class="fa-solid fa-rocket"></i></div>
             <h1 class="page-title">Start your journey</h1>
             <p class="page-subtitle">Master English with simple, daily habits.</p>
 
@@ -95,14 +97,14 @@
                     <div class="form-group">
                         <label>Password</label>
                         <div class="input-wrapper">
-                            <input type="password" id="reg-password" placeholder="1234" required>
+                            <input type="password" id="reg-password" placeholder="••••••••" required>
                         </div>
                         <p class="hint-text">Must be at least 8 characters long.</p>
                     </div>
                     <div class="form-group" style="margin-bottom: 24px;">
                         <label>Confirm Password</label>
                         <div class="input-wrapper" id="reg-confirm-wrapper">
-                            <input type="password" id="reg-confirm" placeholder="1234" required>
+                            <input type="password" id="reg-confirm" placeholder="••••••••" required>
                         </div>
                         <p class="error-text" id="reg-confirm-error" style="display: none;"><i
                                 class="fa-solid fa-circle-exclamation"></i> Passwords do not match</p>
@@ -130,10 +132,10 @@
                     <input type="text" placeholder="Search articles...">
                 </div>
                 <nav class="main-nav">
-                    <a href="#" class="active">Articles</a>
-                    <a href="#">Library</a>
-                    <a href="#">Quiz</a>
-                    <a href="#">Dashboard</a>
+                    <a href="#" class="active" id="nav-articles-articles">Articles</a>
+                    <a href="#" id="nav-articles-library">Library</a>
+                    <a href="#" id="nav-articles-quiz">Quiz</a>
+                    <a href="#" id="nav-articles-dashboard">Dashboard</a>
                 </nav>
                 <div class="user-profile">
                     <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
@@ -208,7 +210,7 @@
                     <div class="content-header">
                         <div class="discover-texts">
                             <h1>Discover</h1>
-                            <p>Showing 42 articles based on your interests</p>
+                            <p>Showing articles based on your interests</p>
                         </div>
                         <div class="view-toggles">
                             <button class="active"><i class="fa-solid fa-grip"></i></button>
@@ -223,8 +225,10 @@
 
                     <div class="articles-grid" id="articles-grid">
                         <!-- Articles sẽ được load động từ API -->
-                        <div class="loading-message" id="articles-loading" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
-                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 16px; display: block;"></i>
+                        <div class="loading-message" id="articles-loading"
+                            style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
+                            <i class="fa-solid fa-spinner fa-spin"
+                                style="font-size: 32px; margin-bottom: 16px; display: block;"></i>
                             Loading articles...
                         </div>
                     </div>
@@ -261,7 +265,8 @@
             <!-- Header Navigation (Shared) -->
             <header class="main-header">
                 <div class="logo">
-                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
                     EngVocabLearn
                 </div>
                 <div class="search-bar">
@@ -269,10 +274,10 @@
                     <input type="text" placeholder="Search articles or authors...">
                 </div>
                 <nav class="main-nav">
-                    <a href="#">Articles</a>
-                    <a href="#">Library</a>
-                    <a href="#">Quiz</a>
-                    <a href="#">Dashboard</a>
+                    <a href="#" id="nav-admin-articles-articles">Articles</a>
+                    <a href="#" id="nav-admin-articles-library">Library</a>
+                    <a href="#" id="nav-admin-articles-quiz">Quiz</a>
+                    <a href="#" class="active" id="nav-admin-articles-dashboard">Dashboard</a>
                 </nav>
                 <div class="user-profile">
                     <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
@@ -283,8 +288,10 @@
                 <!-- Admin Sidebar -->
                 <aside class="admin-sidebar">
                     <nav class="admin-nav">
-                        <a href="#" class="admin-nav-item active" id="nav-admin-articles"><i class="fa-regular fa-file-lines"></i> Articles</a>
-                        <a href="#" class="admin-nav-item" id="nav-admin-categories"><i class="fa-solid fa-layer-group"></i> Categories</a>
+                        <a href="#" class="admin-nav-item active" id="nav-admin-articles"><i
+                                class="fa-regular fa-file-lines"></i> Articles</a>
+                        <a href="#" class="admin-nav-item" id="nav-admin-categories"><i
+                                class="fa-solid fa-layer-group"></i> Categories</a>
                         <a href="#" class="admin-nav-item"><i class="fa-regular fa-user"></i> Users</a>
                         <a href="#" class="admin-nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
                     </nav>
@@ -304,9 +311,11 @@
                     <div class="admin-header">
                         <div>
                             <h1>Article Management</h1>
-                            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Manage and curate English learning content for your students.</p>
+                            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Manage and curate English
+                                learning content for your students.</p>
                         </div>
-                        <button class="btn-primary" id="add-new-article-btn"><i class="fa-solid fa-plus"></i> Add New Article</button>
+                        <button class="btn-primary" id="add-new-article-btn"><i class="fa-solid fa-plus"></i> Add New
+                            Article</button>
                     </div>
 
                     <table class="admin-table">
@@ -325,33 +334,39 @@
                                 <td style="color: #0f172a; font-weight: 500;">Mastering Present Perfect</td>
                                 <td>Grammar</td>
                                 <td><span class="text-gray">Intermediate</span></td>
-                                <td><span class="status-badge published"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Published</span></td>
+                                <td><span class="status-badge published"><i class="fa-solid fa-circle"
+                                            style="font-size: 6px;"></i> Published</span></td>
                                 <td>Oct 24, 2023</td>
                                 <td>
                                     <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button class="action-icon text-gray"><i
+                                            class="fa-regular fa-trash-can"></i></button>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="color: #0f172a; font-weight: 500;">10 Business Idioms to Know</td>
                                 <td>Vocabulary</td>
                                 <td><span class="text-gray">Advanced</span></td>
-                                <td><span class="status-badge pending"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Pending</span></td>
+                                <td><span class="status-badge pending"><i class="fa-solid fa-circle"
+                                            style="font-size: 6px;"></i> Pending</span></td>
                                 <td>Oct 26, 2023</td>
                                 <td>
                                     <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button class="action-icon text-gray"><i
+                                            class="fa-regular fa-trash-can"></i></button>
                                 </td>
                             </tr>
-                             <tr>
+                            <tr>
                                 <td style="color: #0f172a; font-weight: 500;">Daily Conversation Guide</td>
                                 <td>Speaking</td>
                                 <td><span class="text-gray">Beginner</span></td>
-                                <td><span class="status-badge draft"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Draft</span></td>
+                                <td><span class="status-badge draft"><i class="fa-solid fa-circle"
+                                            style="font-size: 6px;"></i> Draft</span></td>
                                 <td>Oct 27, 2023</td>
                                 <td>
                                     <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button class="action-icon text-gray"><i
+                                            class="fa-regular fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -370,21 +385,24 @@
 
                     <div class="admin-stats-grid">
                         <div class="stat-card">
-                            <div class="stat-icon-wrapper text-blue icon-blue-bg"><i class="fa-regular fa-eye"></i></div>
+                            <div class="stat-icon-wrapper text-blue icon-blue-bg"><i class="fa-regular fa-eye"></i>
+                            </div>
                             <div>
                                 <span class="stat-title">Total Views</span>
                                 <strong>12.4k</strong>
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon-wrapper text-green icon-green-bg"><i class="fa-regular fa-circle-check"></i></div>
+                            <div class="stat-icon-wrapper text-green icon-green-bg"><i
+                                    class="fa-regular fa-circle-check"></i></div>
                             <div>
                                 <span class="stat-title">Published</span>
                                 <strong>18</strong>
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon-wrapper text-yellow icon-yellow-bg"><i class="fa-solid fa-minus"></i></div>
+                            <div class="stat-icon-wrapper text-yellow icon-yellow-bg"><i class="fa-solid fa-minus"></i>
+                            </div>
                             <div>
                                 <span class="stat-title">Pending review</span>
                                 <strong>4</strong>
@@ -394,9 +412,11 @@
                 </main>
             </div>
 
-            <footer class="full-footer" style="margin-top: auto; border-radius: 0; padding: 24px 48px; border-top: 1px solid #e2e8f0;">
+            <footer class="full-footer"
+                style="margin-top: auto; border-radius: 0; padding: 24px 48px; border-top: 1px solid #e2e8f0;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                    <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
                     <strong style="color: #0f172a;">EngVocabLearn</strong>
                 </div>
                 <div>© 2026 EngVocabLearn. All rights reserved.</div>
@@ -411,7 +431,8 @@
             <!-- Header Navigation (Shared) -->
             <header class="main-header">
                 <div class="logo">
-                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
                     EngVocabLearn
                 </div>
                 <div class="search-bar">
@@ -419,10 +440,10 @@
                     <input type="text" placeholder="Search categories...">
                 </div>
                 <nav class="main-nav">
-                    <a href="#">Articles</a>
-                    <a href="#">Library</a>
-                    <a href="#">Quiz</a>
-                    <a href="#">Dashboard</a>
+                    <a href="#" id="nav-admin-cats-articles">Articles</a>
+                    <a href="#" id="nav-admin-cats-library">Library</a>
+                    <a href="#" id="nav-admin-cats-quiz">Quiz</a>
+                    <a href="#" class="active" id="nav-admin-cats-dashboard">Dashboard</a>
                 </nav>
                 <div class="user-profile">
                     <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
@@ -433,8 +454,10 @@
                 <!-- Admin Sidebar -->
                 <aside class="admin-sidebar">
                     <nav class="admin-nav">
-                        <a href="#" class="admin-nav-item" id="nav-category-articles"><i class="fa-regular fa-file-lines"></i> Articles</a>
-                        <a href="#" class="admin-nav-item active" id="nav-category-categories"><i class="fa-solid fa-layer-group"></i> Categories</a>
+                        <a href="#" class="admin-nav-item" id="nav-category-articles"><i
+                                class="fa-regular fa-file-lines"></i> Articles</a>
+                        <a href="#" class="admin-nav-item active" id="nav-category-categories"><i
+                                class="fa-solid fa-layer-group"></i> Categories</a>
                         <a href="#" class="admin-nav-item"><i class="fa-regular fa-user"></i> Users</a>
                         <a href="#" class="admin-nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
                     </nav>
@@ -454,9 +477,11 @@
                     <div class="admin-header">
                         <div>
                             <h1>Category Management</h1>
-                            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Manage and organize English learning topics for your articles.</p>
+                            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Manage and organize English
+                                learning topics for your articles.</p>
                         </div>
-                        <button class="btn-primary" id="add-new-category-btn"><i class="fa-solid fa-plus"></i> Add Tag</button>
+                        <button class="btn-primary" id="add-new-category-btn"><i class="fa-solid fa-plus"></i> Add
+                            Tag</button>
                     </div>
 
                     <div class="admin-stats-grid mb-24">
@@ -464,17 +489,21 @@
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <span class="stat-title">TOTAL CATEGORIES</span>
                                 <strong style="font-size: 28px;">24</strong>
-                                <span class="stat-trend trend-green"><i class="fa-solid fa-arrow-trend-up"></i> +3 this month</span>
+                                <span class="stat-trend trend-green"><i class="fa-solid fa-arrow-trend-up"></i> +3 this
+                                    month</span>
                             </div>
-                            <div class="stat-icon-wrapper text-blue icon-blue-bg" style="font-size: 20px;"><i class="fa-solid fa-cubes"></i></div>
+                            <div class="stat-icon-wrapper text-blue icon-blue-bg" style="font-size: 20px;"><i
+                                    class="fa-solid fa-cubes"></i></div>
                         </div>
                         <div class="stat-card stat-card-flex-between">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <span class="stat-title">MOST USED CATEGORY</span>
                                 <strong style="font-size: 18px; margin-top: 6px;">Business English</strong>
-                                <span class="stat-subtitle text-gray" style="font-size: 13px;">142 Articles linked</span>
+                                <span class="stat-subtitle text-gray" style="font-size: 13px;">142 Articles
+                                    linked</span>
                             </div>
-                            <div class="stat-icon-wrapper text-blue icon-blue-bg" style="font-size: 20px;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="stat-icon-wrapper text-blue icon-blue-bg" style="font-size: 20px;"><i
+                                    class="fa-solid fa-wand-magic-sparkles"></i></div>
                         </div>
                         <div class="stat-card stat-card-flex-between stat-card-error">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -482,7 +511,8 @@
                                 <strong style="font-size: 28px;">2</strong>
                                 <span class="stat-trend trend-red">Action required</span>
                             </div>
-                            <div class="stat-icon-wrapper text-red icon-red-bg" style="font-size: 20px;"><i class="fa-solid fa-circle-exclamation"></i></div>
+                            <div class="stat-icon-wrapper text-red icon-red-bg" style="font-size: 20px;"><i
+                                    class="fa-solid fa-circle-exclamation"></i></div>
                         </div>
                     </div>
 
@@ -498,77 +528,172 @@
                         </thead>
                         <tbody id="admin-categories-tbody">
                             <tr>
-                                <td style="color: #0f172a; font-weight: 500;"><i class="fa-solid fa-house table-cat-icon"></i> Business English</td>
+                                <td style="color: #0f172a; font-weight: 500;"><i
+                                        class="fa-solid fa-house table-cat-icon"></i> Business English</td>
                                 <td><span class="text-gray" style="font-family: monospace;">business-english</span></td>
                                 <td><span class="count-badge count-green">142</span></td>
                                 <td><span class="text-gray">Oct 24, 2023</span></td>
                                 <td>
                                     <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button class="action-icon text-gray"><i
+                                            class="fa-regular fa-trash-can"></i></button>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="color: #0f172a; font-weight: 500;"><i class="fa-solid fa-list-check table-cat-icon"></i> Grammar Essentials</td>
-                                <td><span class="text-gray" style="font-family: monospace;">grammar-essentials</span></td>
+                                <td style="color: #0f172a; font-weight: 500;"><i
+                                        class="fa-solid fa-list-check table-cat-icon"></i> Grammar Essentials</td>
+                                <td><span class="text-gray" style="font-family: monospace;">grammar-essentials</span>
+                                </td>
                                 <td><span class="count-badge count-blue">89</span></td>
                                 <td><span class="text-gray">Nov 02, 2023</span></td>
                                 <td>
                                     <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="color: #0f172a; font-weight: 500;"><i class="fa-solid fa-passport table-cat-icon"></i> IELTS Preparation</td>
-                                <td><span class="text-gray" style="font-family: monospace;">ielts-prep</span></td>
-                                <td><span class="count-badge count-orange">56</span></td>
-                                <td><span class="text-gray">Oct 30, 2023</span></td>
-                                <td>
-                                    <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="color: #0f172a; font-weight: 500;"><i class="fa-solid fa-comment-dots table-cat-icon"></i> Idioms & Slang</td>
-                                <td><span class="text-gray" style="font-family: monospace;">idioms-slang</span></td>
-                                <td><span class="count-badge count-blue">34</span></td>
-                                <td><span class="text-gray">Oct 15, 2023</span></td>
-                                <td>
-                                    <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon text-gray"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button class="action-icon text-gray"><i
+                                            class="fa-regular fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </main>
+            </div>
+        </div>
+    </template>
 
-                     <div class="table-footer">
-                        <span class="showing-text">Showing 1 to 10 of 24 categories</span>
-                        <div class="pagination">
-                            <button class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <button class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+    <!-- ========== VOCABULARY TEMPLATE ========== -->
+    <template id="vocabulary-template">
+        <div class="articles-layout vocabulary-layout">
+            <!-- Header Navigation -->
+            <header class="main-header">
+                <div class="logo" style="cursor: pointer;" id="vocab-to-articles">
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
+                    EngVocabLearn
+                </div>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search saved words...">
+                </div>
+                <nav class="main-nav">
+                    <a href="#" id="nav-vocab-articles">Articles</a>
+                    <a href="#" class="active" id="nav-vocab-library">Library</a>
+                    <a href="#" id="nav-vocab-quiz">Quiz</a>
+                    <a href="#" id="nav-vocab-dashboard">Dashboard</a>
+                </nav>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                </div>
+            </header>
+
+            <div class="page-body" style="background-color: #f7f9fc;">
+                <main class="content-area vocab-content">
+                    <div class="vocab-header">
+                        <div class="vocab-title">
+                            <h1>My Vocabulary</h1>
+                            <p>Curate and master your personal word collection</p>
                         </div>
                     </div>
-                    
-                    <div class="admin-pro-tip" style="margin-top: 24px; display: flex; align-items: flex-start; gap: 12px; background: #eff6ff; border-radius: 8px; padding: 16px;">
-                        <i class="fa-solid fa-lightbulb text-blue" style="font-size: 20px; margin-top: 2px;"></i>
-                        <div>
-                            <strong style="color: #1d4ed8; font-size: 14px; display: block; margin-bottom: 4px;">Editor's Pro-Tip</strong>
-                            <p style="color: #3b82f6; font-size: 13px; line-height: 1.5;">Keep category names concise for better navigation in the frontend. Categories with more than 100 articles might benefit from being split into sub-categories to improve discoverability for learners.</p>
+
+                    <div class="vocab-controls">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="vocab-search" placeholder="Search within your saved words...">
+                        </div>
+                    </div>
+
+                    <div class="vocab-table-container">
+                        <table class="vocab-table">
+                            <thead>
+                                <tr>
+                                    <th>WORD</th>
+                                    <th>MEANING</th>
+                                    <th>EXAMPLE SENTENCE</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocab-tbody">
+                                <!-- Rows will be injected by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-footer">
+                        <span class="showing-text" id="vocab-showing-text">Showing words</span>
+                        <div class="pagination" id="vocab-pagination">
+                            <!-- Pagination will be injected by app.js -->
                         </div>
                     </div>
                 </main>
             </div>
+        </div>
+    </template>
 
-            <footer class="full-footer" style="margin-top: auto; border-radius: 0; padding: 24px 48px; border-top: 1px solid #e2e8f0;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
-                    <strong style="color: #0f172a;">EngVocabLearn</strong>
+    <!-- ========== ARTICLE DETAIL TEMPLATE ========== -->
+    <template id="article-detail-template">
+        <div class="articles-layout article-detail-layout" style="background-color: #fff;">
+            <!-- Header Navigation -->
+            <header class="main-header">
+                <div class="logo" style="cursor: pointer;" id="detail-to-articles">
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                            style="transform: rotate(-45deg);"></i></span>
+                    EngVocabLearn
                 </div>
-                <div>© 2026 EngVocabLearn. All rights reserved.</div>
-                <div class="footer-links"></div>
-            </footer>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search articles...">
+                </div>
+                <nav class="main-nav">
+                    <a href="#" id="nav-detail-articles">Articles</a>
+                    <a href="#" id="nav-detail-library">Library</a>
+                    <a href="#" id="nav-detail-quiz">Quiz</a>
+                    <a href="#" id="nav-detail-dashboard">Dashboard</a>
+                </nav>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                </div>
+            </header>
+
+            <div class="page-body">
+                <main class="content-area detail-content">
+                    <div class="article-hero-image" id="detail-article-image">
+                    </div>
+
+                    <h1 class="article-detail-title" id="detail-article-title">Article Title</h1>
+                    <p class="article-detail-subtitle" id="detail-article-subtitle">Article Subtitle</p>
+
+                    <div class="article-text-body" id="detail-article-body">
+                        <!-- Content will be injected here -->
+                    </div>
+
+                    <!-- Popups -->
+                    <!-- Vocab Popup -->
+                    <div class="interactive-popup vocab-popup" id="vocab-popup">
+                        <button class="popup-close"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="popup-header-row">
+                            <h3 class="popup-word" id="popup-word">Word</h3>
+                            <button class="btn-audio"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                        <span class="popup-pronunciation" id="popup-phonetic">/pronunciation/</span>
+
+                        <div class="popup-section">
+                            <span class="popup-label">DEFINITION</span>
+                            <p class="popup-text" id="popup-definition">Definition...</p>
+                        </div>
+
+                        <div class="popup-section">
+                            <span class="popup-label">EXAMPLE</span>
+                            <p class="popup-text example" id="popup-example">Example...</p>
+                        </div>
+
+                        <button class="btn-primary-solid w-100 mt-16" id="add-to-vocab-btn"><i
+                                class="fa-regular fa-bookmark"></i> Save to Dictionary</button>
+
+                        <div class="popup-footer">
+                            <span><i class="fa-solid fa-book-open" style="color: #cbd5e1; margin-right: 4px;"></i> ENG
+                                VOCAB LEARNER PRO</span>
+                        </div>
+                    </div>
+                </main>
+            </div>
         </div>
     </template>
 

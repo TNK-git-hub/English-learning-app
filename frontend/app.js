@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial state
     let state = {
-        currentView: 'login' // 'login', 'register', or 'articles'
+        currentView: 'login', // 'login', 'register', or 'articles'
+        selectedArticle: null
     };
 
     // Render function based on state
@@ -36,6 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
             appContainer.innerHTML = '';
             appContainer.appendChild(template.content.cloneNode(true));
             attachAdminCategoriesEvents();
+        } else if (state.currentView === 'vocabulary') {
+            const template = document.getElementById('vocabulary-template');
+            appContainer.innerHTML = '';
+            appContainer.appendChild(template.content.cloneNode(true));
+            attachVocabularyEvents();
+        } else if (state.currentView === 'article-detail') {
+            const template = document.getElementById('article-detail-template');
+            appContainer.innerHTML = '';
+            appContainer.appendChild(template.content.cloneNode(true));
+            renderArticleDetail();
+            attachArticleDetailEvents();
         }
     }
 
@@ -199,6 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('.bookmark-btn') || e.target.closest('.author')) return;
+            state.selectedArticle = article;
+            animateTransition('article-detail');
+        });
+
         return el;
     }
 
@@ -293,13 +312,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // ENTRY POINT TO ADMIN (via Dashboard nav link)
+        // GLOBAL NAVIGATION
         const navLinks = document.querySelectorAll('.main-nav a');
         navLinks.forEach(link => {
             if (link.textContent.trim() === 'Dashboard') {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     animateTransition('admin-articles');
+                });
+            } else if (link.textContent.trim() === 'Library') {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    animateTransition('vocabulary');
                 });
             }
         });
@@ -320,16 +344,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAdminArticles() {
         const tbody = document.getElementById('admin-articles-tbody');
         if (!tbody) return;
-        
+
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i> Loading database articles...</td></tr>';
-        
+
         try {
             const res = await fetch(`${API_BASE_URL}/api/articles`);
             const data = await res.json();
-            
+
             if (data.success && data.data && data.data.length > 0) {
                 tbody.innerHTML = '';
-                
+
                 const showingText = document.querySelector('.admin-content .table-footer .showing-text');
                 if (showingText) showingText.textContent = `Showing 1 to ${data.data.length} of ${data.total} articles`;
 
@@ -339,27 +363,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 data.data.forEach(article => {
                     const primaryTag = article.tags && article.tags.length > 0 ? article.tags[0] : 'General';
-                    const dateAdded = article.created_at 
-                        ? new Date(article.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+                    const dateAdded = article.created_at
+                        ? new Date(article.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                         : 'Unknown';
-                    
+
                     // Generate consistent simulation data for visual presentation since backend doesn't provide these natively yet
                     const idSum = article.id ? String(article.id).split('').reduce((a, b) => a + b.charCodeAt(0), 0) : article.title.length * 10;
                     const views = idSum * 15 + (article.title.length * 7);
-                    
+
                     const isPending = (idSum % 4 === 0);
                     const isDraft = (idSum % 9 === 0 && !isPending);
-                    
+
                     let status;
                     if (isDraft) status = { cls: 'draft', label: 'Draft' };
                     else if (isPending) { status = { cls: 'pending', label: 'Pending review' }; pendingCount++; }
                     else { status = { cls: 'published', label: 'Published' }; publishedCount++; }
-                    
+
                     totalViews += views;
-                    
+
                     const diffModes = ['Beginner', 'Intermediate', 'Advanced'];
                     const difficulty = diffModes[idSum % 3];
-                    
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="color: #0f172a; font-weight: 500;">${article.title}</td>
@@ -378,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Dynamically update the Stat Cards for Articles
                 const statCards = document.querySelectorAll('.admin-stats-grid .stat-card strong');
                 if (statCards.length >= 3) {
-                    statCards[0].textContent = totalViews >= 1000 ? (totalViews/1000).toFixed(1) + 'k' : totalViews; // Total Views
+                    statCards[0].textContent = totalViews >= 1000 ? (totalViews / 1000).toFixed(1) + 'k' : totalViews; // Total Views
                     statCards[1].textContent = publishedCount; // Published
                     statCards[2].textContent = pendingCount; // Pending review
                 }
@@ -407,17 +431,17 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAdminCategories() {
         const tbody = document.getElementById('admin-categories-tbody');
         if (!tbody) return;
-        
+
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i> Loading database categories...</td></tr>';
-        
+
         try {
             // Because no backend API was added, we fetch articles and build category data locally
             const res = await fetch(`${API_BASE_URL}/api/articles`);
             const data = await res.json();
-            
+
             if (data.success && data.data) {
                 tbody.innerHTML = '';
-                
+
                 let catMap = {};
                 data.data.forEach(article => {
                     const tList = (article.tags && article.tags.length > 0) ? article.tags : ['General'];
@@ -427,9 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         catMap[tag].count++;
                     });
                 });
-                
-                const catArray = Object.values(catMap).sort((a,b) => b.count - a.count);
-                
+
+                const catArray = Object.values(catMap).sort((a, b) => b.count - a.count);
+
                 const showingText = document.querySelector('.admin-content .table-footer .showing-text');
                 if (showingText) showingText.textContent = `Showing 1 to ${catArray.length} of ${catArray.length} categories`;
 
@@ -437,9 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mostUsedCards = document.querySelectorAll('.admin-stats-grid .stat-card .stat-subtitle');
 
                 if (statCards.length >= 3) {
-                    statCards[0].textContent = catArray.length; 
+                    statCards[0].textContent = catArray.length;
                     if (catArray.length > 0) {
-                        statCards[1].textContent = catArray[0].name; 
+                        statCards[1].textContent = catArray[0].name;
                         if (mostUsedCards.length > 0) mostUsedCards[0].textContent = `${catArray[0].count} Articles linked`;
                     }
                     statCards[2].textContent = '0'; // Since we only group attached tags, there are theoretically 0 empty categories generated this way
@@ -447,11 +471,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 catArray.forEach(tag => {
                     const slug = tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-                    
+
                     let countColor = 'count-green';
                     if (tag.count < 3) countColor = 'count-orange';
                     if (tag.count >= 3 && tag.count < 10) countColor = 'count-blue';
-                    
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="color: #0f172a; font-weight: 500;"><i class="fa-solid fa-tag table-cat-icon"></i> ${tag.name}</td>
@@ -465,9 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     tbody.appendChild(tr);
                 });
-                
+
                 if (catArray.length === 0) {
-                     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">No categories found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">No categories found.</td></tr>';
                 }
             } else {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">No categories found in database.</td></tr>';
@@ -488,6 +512,272 @@ document.addEventListener('DOMContentLoaded', () => {
                     animateTransition('articles'); // Exit back to user dashboard/articles
                 });
             }
+        });
+    }
+
+    // ===== Vocabulary Table Feature (Mocked Data) =====
+    const vocabData = [
+        { word: 'Ephemeral', type: 'Adjective', meaning: 'Lasting for a very short time', example: '"The sunset offered an ephemeral moment of beauty."' },
+        { word: 'Resilient', type: 'Adjective', meaning: 'Able to withstand or recover quickly from difficult conditions.', example: '"She is a resilient girl who never gives up."' },
+        { word: 'Eloquent', type: 'Adjective', meaning: 'Fluent or persuasive in speaking or writing.', example: '"The president gave an eloquent speech at the ceremony."' },
+        { word: 'Meticulous', type: 'Adjective', meaning: 'Showing great attention to detail; very careful and precise.', example: '"He was meticulous about keeping the records."' },
+        { word: 'Pragmatic', type: 'Adjective', meaning: 'Dealing with things sensibly and realistically', example: '"We need a pragmatic solution to this issue."' }
+    ];
+    // Dummy words to emulate pagination functionality
+    for (let i = 1; i <= 119; i++) {
+        vocabData.push({ word: `MockWord${i}`, type: 'Noun', meaning: 'Dummy meaning for pagination test.', example: '"This is a dummy sentence."' });
+    }
+
+    let vocabCurrentPage = 1;
+    function attachVocabularyEvents() {
+        const navArticles = document.getElementById('nav-vocab-articles');
+        const navDashboard = document.getElementById('nav-vocab-dashboard');
+        const logoBtn = document.getElementById('vocab-to-dashboard');
+
+        if (navArticles) navArticles.addEventListener('click', (e) => { e.preventDefault(); animateTransition('articles'); });
+        if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); animateTransition('admin-articles'); });
+        if (logoBtn) logoBtn.addEventListener('click', (e) => { e.preventDefault(); animateTransition('articles'); });
+
+        const searchInput = document.getElementById('vocab-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                vocabCurrentPage = 1;
+                renderVocabularyTable();
+            });
+        }
+        renderVocabularyTable();
+    }
+
+    function renderVocabularyTable() {
+        const tbody = document.getElementById('vocab-tbody');
+        const searchInput = document.getElementById('vocab-search');
+        const showingText = document.getElementById('vocab-showing-text');
+        const pagination = document.getElementById('vocab-pagination');
+        if (!tbody) return;
+
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        const filtered = vocabData.filter(v =>
+            v.word.toLowerCase().includes(query) || v.meaning.toLowerCase().includes(query)
+        );
+
+        const itemsPerPage = 10;
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        if (vocabCurrentPage > totalPages) vocabCurrentPage = totalPages;
+
+        const startIdx = (vocabCurrentPage - 1) * itemsPerPage;
+        const pageItems = filtered.slice(startIdx, startIdx + itemsPerPage);
+
+        tbody.innerHTML = '';
+        pageItems.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="vocab-word-cell">
+                        <strong>${item.word}</strong>
+                        <span>${item.type}</span>
+                    </div>
+                </td>
+                <td><div class="vocab-meaning-cell">${item.meaning}</div></td>
+                <td><div class="vocab-example-cell">${item.example}</div></td>
+                <td>
+                    <button class="action-icon" style="color: #64748b;"><i class="fa-solid fa-volume-high"></i></button>
+                    <button class="action-icon" style="color: #64748b;"><i class="fa-solid fa-pen"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">No words found matching your search.</td></tr>';
+        }
+
+        if (showingText) {
+            const endIdx = Math.min(startIdx + itemsPerPage, filtered.length);
+            showingText.textContent = `Showing ${filtered.length > 0 ? startIdx + 1 : 0}-${endIdx} of ${filtered.length} words`;
+        }
+
+        if (pagination) {
+            pagination.innerHTML = '';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'icon-btn';
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.disabled = vocabCurrentPage === 1;
+            prevBtn.onclick = () => { if (vocabCurrentPage > 1) { vocabCurrentPage--; renderVocabularyTable(); } };
+            pagination.appendChild(prevBtn);
+
+            let pagesToShow = [];
+            if (totalPages <= 5) {
+                pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1);
+            } else if (vocabCurrentPage <= 3) {
+                pagesToShow = [1, 2, 3, 4, '...', totalPages];
+            } else if (vocabCurrentPage > totalPages - 3) {
+                pagesToShow = [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+            } else {
+                pagesToShow = [1, '...', vocabCurrentPage - 1, vocabCurrentPage, vocabCurrentPage + 1, '...', totalPages];
+            }
+
+            pagesToShow.forEach(p => {
+                if (p === '...') {
+                    const span = document.createElement('span');
+                    span.className = 'ellipsis';
+                    span.textContent = '...';
+                    pagination.appendChild(span);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = `page-btn ${p === vocabCurrentPage ? 'active' : ''}`;
+                    btn.textContent = p;
+                    btn.onclick = () => { vocabCurrentPage = p; renderVocabularyTable(); };
+                    pagination.appendChild(btn);
+                }
+            });
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'icon-btn';
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.disabled = vocabCurrentPage === totalPages;
+            nextBtn.onclick = () => { if (vocabCurrentPage < totalPages) { vocabCurrentPage++; renderVocabularyTable(); } };
+            pagination.appendChild(nextBtn);
+        }
+    }
+
+    // ===== Article Detail Feature (Interactive Popups) =====
+    function renderArticleDetail() {
+        const article = state.selectedArticle;
+        if (!article) return;
+
+        const titleEl = document.getElementById('detail-article-title');
+        const subtitleEl = document.getElementById('detail-article-subtitle');
+        const imageEl = document.getElementById('detail-article-image');
+        const bodyEl = document.getElementById('detail-article-body');
+
+        if (titleEl) titleEl.textContent = article.title;
+        if (subtitleEl) subtitleEl.textContent = article.tags.join(' • ');
+        if (imageEl) {
+            imageEl.style.backgroundImage = `url(${article.image_url || 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1000&q=80'})`;
+            imageEl.style.backgroundSize = 'cover';
+            imageEl.style.backgroundPosition = 'center';
+            imageEl.style.height = '400px';
+            imageEl.style.borderRadius = '16px';
+            imageEl.style.marginBottom = '40px';
+        }
+
+        if (bodyEl) {
+            // Process text to make every word clickable
+            const processedHtml = processTextForLookup(article.content || '');
+            bodyEl.innerHTML = processedHtml;
+        }
+    }
+
+    function processTextForLookup(text) {
+        return text.split('\n').map(para => {
+            if (!para.trim()) return '';
+            const words = para.split(/(\s+)/);
+            const wrappedWords = words.map(word => {
+                if (/^\s+$/.test(word)) return word;
+                const cleanWord = word.replace(/[.,!?;:()"]/g, '');
+                if (!cleanWord) return word;
+                return `<span class="lookup-word" data-word="${cleanWord.toLowerCase()}">${word}</span>`;
+            }).join('');
+            return `<p>${wrappedWords}</p>`;
+        }).join('');
+    }
+
+    function attachArticleDetailEvents() {
+        const backBtn = document.getElementById('detail-to-articles');
+        if (backBtn) backBtn.addEventListener('click', () => animateTransition('articles'));
+
+        const navLibrary = document.getElementById('nav-detail-library');
+        if (navLibrary) navLibrary.addEventListener('click', (e) => { e.preventDefault(); animateTransition('vocabulary'); });
+
+        const vocabPopup = document.getElementById('vocab-popup');
+        const translationPopup = document.getElementById('translation-popup');
+
+        function closeAllPopups() {
+            if (vocabPopup) vocabPopup.classList.remove('show');
+            if (translationPopup) translationPopup.classList.remove('show');
+        }
+
+        function positionPopup(triggerEl, popupEl) {
+            const rect = triggerEl.getBoundingClientRect();
+            let top = rect.bottom + window.scrollY + 10;
+            let left = rect.left + window.scrollX - (340 / 2) + (rect.width / 2);
+
+            if (left < 20) left = 20;
+            if (left + 340 > window.innerWidth - 20) left = window.innerWidth - 360;
+
+            popupEl.style.top = `${top}px`;
+            popupEl.style.left = `${left}px`;
+
+            popupEl.classList.add('show');
+        }
+
+        // Word Lookup Events
+        document.querySelectorAll('.lookup-word').forEach(wordEl => {
+            wordEl.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const word = wordEl.dataset.word;
+
+                // Show loading state in popup
+                closeAllPopups();
+                document.getElementById('popup-word').textContent = word;
+                document.getElementById('popup-phonetic').textContent = 'Loading...';
+                document.getElementById('popup-definition').textContent = 'Fetching definition...';
+                document.getElementById('popup-example').textContent = '';
+
+                positionPopup(wordEl, vocabPopup);
+
+                try {
+                    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                    const data = await res.json();
+
+                    if (data && data.length > 0) {
+                        const entry = data[0];
+                        document.getElementById('popup-phonetic').textContent = entry.phonetic || '';
+                        document.getElementById('popup-definition').textContent = entry.meanings[0].definitions[0].definition;
+                        const example = entry.meanings[0].definitions[0].example;
+                        document.getElementById('popup-example').textContent = example ? `"${example}"` : '';
+                    } else {
+                        document.getElementById('popup-definition').textContent = 'Definition not found.';
+                    }
+                } catch (err) {
+                    document.getElementById('popup-definition').textContent = 'Error fetching definition.';
+                }
+            });
+        });
+
+        // Save Word to Vocabulary
+        const addBtn = document.getElementById('add-to-vocab-btn');
+        if (addBtn) {
+            addBtn.onclick = () => {
+                const word = document.getElementById('popup-word').textContent;
+                const definition = document.getElementById('popup-definition').textContent;
+                const example = document.getElementById('popup-example').textContent;
+
+                if (word && definition !== 'Fetching definition...') {
+                    vocabData.unshift({
+                        word: word.charAt(0).toUpperCase() + word.slice(1),
+                        type: 'Noun', // Simplified
+                        meaning: definition,
+                        example: example || 'No example provided.'
+                    });
+                    alert(`"${word}" added to your vocabulary!`);
+                    closeAllPopups();
+                }
+            };
+        }
+
+        const detailLayout = document.querySelector('.article-detail-layout');
+        if (detailLayout) {
+            detailLayout.addEventListener('click', (e) => {
+                if (vocabPopup && !vocabPopup.contains(e.target)) {
+                    vocabPopup.classList.remove('show');
+                }
+            });
+        }
+
+        document.querySelectorAll('.popup-close').forEach(btn => {
+            btn.addEventListener('click', closeAllPopups);
         });
     }
 
