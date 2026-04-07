@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
+                const errorBanner = document.getElementById('login-error-message');
+
+                if (errorBanner) {
+                    errorBanner.style.display = 'none';
+                }
 
                 try {
                     const res = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -80,11 +85,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.status === 'Success') {
                         animateTransition('articles');
                     } else {
-                        alert(data.message || 'Đăng nhập thất bại');
+                        if (errorBanner) {
+                            errorBanner.style.display = 'flex';
+                            errorBanner.querySelector('span').textContent = data.message || 'Invalid email or password. Please try again.';
+                        } else {
+                            alert(data.message || 'Invalid email or password. Please try again.');
+                        }
                     }
                 } catch (error) {
                     console.error('Login error:', error);
-                    alert('Không thể kết nối server. Hãy chắc chắn FastAPI đang chạy trên port 8000.');
+                    if (errorBanner) {
+                        errorBanner.style.display = 'flex';
+                        errorBanner.querySelector('span').textContent = 'Server connection failed. Make sure FastAPI is running.';
+                    } else {
+                        alert('Server connection failed. Make sure FastAPI is running.');
+                    }
                 }
             });
         }

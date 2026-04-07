@@ -6,22 +6,44 @@ import mysql.connector
 import uuid
 import os
 from dotenv import load_dotenv
+from config.database import DB_CONFIG
 
 load_dotenv()
 
 
 def seed():
+    DB_CONFIG = {
+        "host": os.getenv("DB_HOST", "127.0.0.1"),
+        "user": os.getenv("DB_USER", "root"),
+        "password": os.getenv("DB_PASSWORD", "123456"),
+        "database": os.getenv("DB_NAME", "LearnUp"),
+        "port": int(os.getenv("DB_PORT", 3306))
+    }
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
 
     try:
-        # ===== 1. Tạo Tags =====
+        # ===== 1. Tạo Tags và Users =====
         tags = ["Sport", "Business", "Culture", "Science", "Lifestyle", "Technology"]
         cursor.execute("DELETE FROM article_tags")
         cursor.execute("DELETE FROM vocabularies")
         cursor.execute("DELETE FROM articles")
         cursor.execute("DELETE FROM tags")
+        cursor.execute("DELETE FROM users")
         conn.commit()
+
+        import bcrypt
+        default_pwd = b"12345678"
+        hashed_pwd = bcrypt.hashpw(default_pwd, bcrypt.gensalt()).decode('utf-8')
+
+        cursor.execute(
+            "INSERT INTO users (email, password_hash, name, role) VALUES (%s, %s, %s, %s)",
+            ("user1@gmail.com", hashed_pwd, "User Account", "user")
+        )
+        cursor.execute(
+            "INSERT INTO users (email, password_hash, name, role) VALUES (%s, %s, %s, %s)",
+            ("admin1@gmail.com", hashed_pwd, "Admin Account", "admin")
+        )
 
         for tag_name in tags:
             cursor.execute("INSERT INTO tags (name) VALUES (%s)", (tag_name,))
@@ -34,7 +56,7 @@ def seed():
         # ===== 2. Tạo Articles =====
         articles = [
             {
-                "title": "tnk: another hamstring injury",
+                "title": "DOMIXI: another hamstring injury",
                 "content": "Reece James has suffered the 10th hamstring injury of his career. The Chelsea defender is expected to be out for several months. This continuous string of injuries has raised questions about his long-term career prospects at the highest level of football.",
                 "image_url": "https://images.unsplash.com/photo-1600250644078-d50d03bfa8dc?w=500&q=80",
                 "tags": ["Sport"],
