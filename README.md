@@ -55,7 +55,7 @@ Bước 6: Chạy dự án
 Terminal 1 — Backend:
 
 cd backend
-python server.py
+python main.py
 Server chạy tại http://localhost:8001.
 
 Terminal 2 — Frontend:
