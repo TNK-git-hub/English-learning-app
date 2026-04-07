@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
             appContainer.appendChild(template.content.cloneNode(true));
             renderArticleDetail();
             attachArticleDetailEvents();
+        } else if (state.currentView === 'user-dashboard') {
+            const template = document.getElementById('user-dashboard-template');
+            appContainer.innerHTML = '';
+            appContainer.appendChild(template.content.cloneNode(true));
+            attachUserDashboardEvents();
         }
     }
 
@@ -333,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (link.textContent.trim() === 'Dashboard') {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    animateTransition('admin-articles');
+                    animateTransition('user-dashboard');
                 });
             } else if (link.textContent.trim() === 'Library') {
                 link.addEventListener('click', (e) => {
@@ -364,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const logoBtn = document.getElementById('vocab-to-dashboard');
 
         if (navArticles) navArticles.addEventListener('click', (e) => { e.preventDefault(); animateTransition('articles'); });
-        if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); animateTransition('admin-articles'); });
+        if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); animateTransition('user-dashboard'); });
         if (logoBtn) logoBtn.addEventListener('click', (e) => { e.preventDefault(); animateTransition('articles'); });
 
         const searchInput = document.getElementById('vocab-search');
@@ -519,6 +524,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const navLibrary = document.getElementById('nav-detail-library');
         if (navLibrary) navLibrary.addEventListener('click', (e) => { e.preventDefault(); animateTransition('vocabulary'); });
 
+        const navDashboard = document.getElementById('nav-detail-dashboard');
+        if (navDashboard) navDashboard.addEventListener('click', (e) => { e.preventDefault(); animateTransition('user-dashboard'); });
+
         const vocabPopup = document.getElementById('vocab-popup');
         const translationPopup = document.getElementById('translation-popup');
 
@@ -608,6 +616,196 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.popup-close').forEach(btn => {
             btn.addEventListener('click', closeAllPopups);
         });
+    }
+
+    function attachUserDashboardEvents() {
+        // Shared Navigation handling for the new Dashboard view
+        const navLinks = document.querySelectorAll('.main-nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const text = link.textContent.trim();
+                if (text === 'Dashboard') {
+                    animateTransition('user-dashboard');
+                } else if (text === 'Articles') {
+                    animateTransition('articles');
+                } else if (text === 'Library') {
+                    animateTransition('vocabulary');
+                } else {
+                    alert(`${text} section is under construction!`);
+                }
+            });
+        });
+
+        // Dashboard Tabs switching
+        const dashTabs = document.querySelectorAll('.dash-tab');
+        const dashViews = document.querySelectorAll('.dash-content-view');
+
+        dashTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                dashTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const targetId = tab.getAttribute('data-target');
+                dashViews.forEach(v => {
+                    v.style.display = 'none';
+                    v.classList.remove('active');
+                });
+
+                const targetView = document.getElementById(`dash-view-${targetId}`);
+                if (targetView) {
+                    targetView.style.display = 'block';
+                    targetView.classList.add('active');
+                }
+            });
+        });
+
+        // Initialize Dynamic Local Data (Simulating Real Data)
+        let vocabCount = 0;
+        if (typeof vocabData !== 'undefined') vocabCount = vocabData.length;
+
+        try {
+            const stored = localStorage.getItem('engvocab_learned');
+            if (stored) vocabCount = parseInt(stored);
+        } catch (e) { }
+
+        const wordsNode = document.getElementById('overview-stat-words');
+        if (wordsNode) wordsNode.textContent = vocabCount;
+
+        // Initialize "My Goals" data
+        const goalVocabCurrent = document.getElementById('goal-vocab-current');
+        const goalVocabTotal = document.getElementById('goal-vocab-total');
+        const goalVocabBar = document.getElementById('goal-vocab-bar');
+        const goalVocabPercentText = document.getElementById('goal-vocab-percent-text');
+        const goalVocabRemain = document.getElementById('goal-vocab-remain');
+
+        if (goalVocabCurrent && goalVocabTotal) {
+            const current = Math.min(vocabCount, 10); // Simulating progress based on vocab count, max 10
+            const total = 10;
+            const percent = Math.round((current / total) * 100);
+
+            goalVocabCurrent.textContent = current;
+            goalVocabTotal.textContent = total;
+            if (goalVocabBar) goalVocabBar.style.width = `${percent}%`;
+            if (goalVocabPercentText) goalVocabPercentText.textContent = `${percent}% Complete`;
+            if (goalVocabRemain) goalVocabRemain.textContent = Math.max(0, total - current);
+        }
+
+        // Initialize "Weekly Reading Goal"
+        const goalReadingCurrent = document.getElementById('goal-reading-current');
+        const goalReadingTotal = document.getElementById('goal-reading-total');
+        const goalReadingCircle = document.getElementById('goal-reading-circle');
+        const goalReadingPercentText = document.getElementById('goal-reading-percent-text');
+
+        if (goalReadingCurrent && goalReadingTotal) {
+            const current = 2; // Hardcoded simulation for now
+            const total = 5;
+            const percent = (current / total) * 100;
+            // Circle circumference is 2 * PI * R = 2 * 3.14 * 38 = 238.64
+            const offset = 238.7 - (238.7 * percent / 100);
+
+            goalReadingCurrent.textContent = current;
+            goalReadingTotal.textContent = total;
+            if (goalReadingCircle) goalReadingCircle.style.strokeDashoffset = offset;
+            if (goalReadingPercentText) goalReadingPercentText.textContent = `${Math.round(percent)}%`;
+        }
+
+        // Dynamic API Fetch for 'Continue Learning'
+        const continueLearningContainer = document.getElementById('dash-continue-learning-grid');
+        if (continueLearningContainer) {
+            continueLearningContainer.innerHTML = '<div style="color:#64748b; padding: 12px 0;">Loading recent actual articles...</div>';
+
+            fetch(`${API_BASE_URL}/api/articles`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        continueLearningContainer.innerHTML = '';
+                        // Render 2 latest articles
+                        const articlesToShow = data.data.slice(0, 2);
+                        articlesToShow.forEach((article, index) => {
+                            const isAudio = article.tags && article.tags.includes('Listening');
+                            const icon = isAudio ? 'fa-headphones' : 'fa-book-open';
+                            const type = isAudio ? 'LISTENING' : 'LESSON';
+                            const tagLabel = article.tags && article.tags.length > 0 ? article.tags[0] : 'General';
+
+                            const html = `
+                            <div class="dash-continue-card" onclick="alert('Proceeding to read: ${article.title}')">
+                                <div class="continue-tag"><i class="fa-solid ${icon}"></i> ${type}</div>
+                                <h4 class="truncate-1" style="font-size: 15px; color: #0f172a; margin: 4px 0;">${article.title}</h4>
+                                <p class="text-gray" style="font-size: 13px; margin-top: 8px;">10 mins • ${tagLabel}</p>
+                            </div>`;
+                            continueLearningContainer.innerHTML += html;
+                        });
+                    } else {
+                        continueLearningContainer.innerHTML = '<div style="color:#64748b; font-size: 14px;">No recent classes found.</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch articles error:', err);
+                    continueLearningContainer.innerHTML = '<div style="color:#ef4444; font-size: 14px;">Failed to fetch class API.</div>';
+                });
+        }
+
+        // Draw the Chart.js Weekly Progress Line Chart
+        setTimeout(() => {
+            const ctx = document.getElementById('weeklyProgressChart');
+            if (ctx && window.Chart) {
+                // Ensure no previous chart instances linger
+                if (window.weeklyChart) {
+                    window.weeklyChart.destroy();
+                }
+
+                // Parse LocalStorage or use fallback for chart
+                let chartData = [20, 35, 25, 45, 30, 40, 50]; // Mock weekly trend
+
+                window.weeklyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Minutes',
+                            data: chartData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#3b82f6',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                padding: 10,
+                                cornerRadius: 4,
+                                displayColors: false,
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 60,
+                                grid: { color: '#f1f5f9' },
+                                border: { display: false }
+                            },
+                            x: {
+                                grid: { display: false },
+                                border: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+        }, 100);
     }
 
     function animateTransition(nextView) {
