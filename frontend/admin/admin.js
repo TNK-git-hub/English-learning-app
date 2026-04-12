@@ -1,4 +1,9 @@
-function attachAdminArticlesEvents() {
+/**
+ * Admin Module — Fetch articles/categories from backend for admin panel
+ * Function names use _admin suffix to avoid conflict with app.js wrappers
+ */
+
+function initAdminArticles() {
     const catNav = document.getElementById('nav-admin-categories');
     if (catNav) {
         catNav.addEventListener('click', (e) => {
@@ -36,7 +41,6 @@ async function fetchAdminArticles() {
                     ? new Date(article.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                     : 'Unknown';
 
-                // Generate consistent simulation data for visual presentation since backend doesn't provide these natively yet
                 const idSum = article.id ? String(article.id).split('').reduce((a, b) => a + b.charCodeAt(0), 0) : article.title.length * 10;
                 const views = idSum * 15 + (article.title.length * 7);
 
@@ -68,12 +72,11 @@ async function fetchAdminArticles() {
                 tbody.appendChild(tr);
             });
 
-            // Dynamically update the Stat Cards for Articles
             const statCards = document.querySelectorAll('.admin-stats-grid .stat-card strong');
             if (statCards.length >= 3) {
-                statCards[0].textContent = totalViews >= 1000 ? (totalViews / 1000).toFixed(1) + 'k' : totalViews; // Total Views
-                statCards[1].textContent = publishedCount; // Published
-                statCards[2].textContent = pendingCount; // Pending review
+                statCards[0].textContent = totalViews >= 1000 ? (totalViews / 1000).toFixed(1) + 'k' : totalViews;
+                statCards[1].textContent = publishedCount;
+                statCards[2].textContent = pendingCount;
             }
 
         } else {
@@ -85,7 +88,7 @@ async function fetchAdminArticles() {
     }
 }
 
-function attachAdminCategoriesEvents() {
+function initAdminCategories() {
     const artNav = document.getElementById('nav-category-articles');
     if (artNav) {
         artNav.addEventListener('click', (e) => {
@@ -104,7 +107,6 @@ async function fetchAdminCategories() {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i> Loading database categories...</td></tr>';
 
     try {
-        // Because no backend API was added, we fetch articles and build category data locally
         const res = await fetch(`${API_BASE_URL}/api/articles`);
         const data = await res.json();
 
@@ -135,7 +137,7 @@ async function fetchAdminCategories() {
                     statCards[1].textContent = catArray[0].name;
                     if (mostUsedCards.length > 0) mostUsedCards[0].textContent = `${catArray[0].count} Articles linked`;
                 }
-                statCards[2].textContent = '0'; // Since we only group attached tags, there are theoretically 0 empty categories generated this way
+                statCards[2].textContent = '0';
             }
 
             catArray.forEach(tag => {
@@ -172,13 +174,12 @@ async function fetchAdminCategories() {
 }
 
 function setupAdminHeaderNav() {
-    // Provide way to exit admin
     const navLinks = document.querySelectorAll('.main-nav a');
     navLinks.forEach(link => {
         if (link.textContent.trim() === 'Dashboard' || link.textContent.trim() === 'Articles') {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                animateTransition('articles'); // Exit back to user dashboard/articles
+                animateTransition('articles');
             });
         }
     });

@@ -1,23 +1,38 @@
+"""
+Tags Router — API endpoints cho Tags.
+"""
 from fastapi import APIRouter, Depends
 from config.database import get_db
+from schemas.tag_schema import TagCreateRequest
+from services import tag_service
+from middleware.auth_middleware import require_admin
 
 router = APIRouter(prefix="/api/tags", tags=["Tags"])
 
+
+@router.get("")
 @router.get("/")
 def get_all_tags(conn=Depends(get_db)):
-    """Lấy danh sách tất cả tags kèm số lượng bài viết."""
-    cursor = conn.cursor(dictionary=True)
-    try:
-        cursor.execute("""
-            SELECT t.id, t.name, COUNT(at2.article_id) AS article_count
-            FROM tags t
-            LEFT JOIN article_tags at2 ON t.id = at2.tag_id
-            GROUP BY t.id
-            ORDER BY article_count DESC, t.name ASC
-        """)
-        tags = cursor.fetchall()
-        return {"success": True, "data": tags, "total": len(tags)}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-    finally:
-        cursor.close()
+    """Lấy danh sách tất cả tags kèm số lượng bài viết (public)."""
+    return tag_service.get_all(conn)
+
+
+@router.post("")
+@router.post("/")
+def create_tag(
+    request: TagCreateRequest,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Tạo tag mới (admin only)."""
+    return tag_service.create_tag(request.name, conn)
+
+
+@router.delete("/{tag_id}")
+def delete_tag(
+    tag_id: int,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Xóa tag (admin only)."""
+    return tag_service.delete_tag(tag_id, conn)

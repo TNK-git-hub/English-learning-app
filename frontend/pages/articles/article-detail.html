@@ -1,0 +1,81 @@
+<template id="article-detail-template">
+    <div class="articles-layout article-detail-layout" style="background-color: #fff;">
+        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="logo" style="cursor: pointer;" id="detail-to-articles">
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                        style="transform: rotate(-45deg);"></i></span>
+                LearnUP
+            </div>
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search articles...">
+            </div>
+            <nav class="main-nav">
+                <a href="#" id="nav-detail-articles">Articles</a>
+                <a href="#" id="nav-detail-library">Library</a>
+                <a href="#" id="nav-detail-quiz">Quiz</a>
+                <a href="#" id="nav-detail-dashboard">Dashboard</a>
+            </nav>
+            <div class="user-profile-dropdown">
+                <div class="user-profile-toggle" title="Account menu">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                </div>
+                <div class="user-dropdown-menu">
+                    <div class="user-dropdown-header">
+                        <span class="user-dropdown-name">User</span>
+                    </div>
+                    <a href="#" class="user-dropdown-item" onclick="animateTransition('user-dashboard'); return false;">
+                        <i class="fa-solid fa-gauge"></i> Dashboard
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="#" class="user-dropdown-item logout-btn">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <main class="content-area detail-content">
+                <div class="article-hero-image" id="detail-article-image">
+                </div>
+
+                <h1 class="article-detail-title" id="detail-article-title">Article Title</h1>
+                <p class="article-detail-subtitle" id="detail-article-subtitle">Article Subtitle</p>
+
+                <div class="article-text-body" id="detail-article-body">
+                    <!-- Content will be injected here -->
+                </div>
+
+                <!-- Vocab Popup -->
+                <div class="interactive-popup vocab-popup" id="vocab-popup">
+                    <button class="popup-close"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="popup-header-row">
+                        <h3 class="popup-word" id="popup-word">Word</h3>
+                        <button class="btn-audio"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <span class="popup-pronunciation" id="popup-phonetic">/pronunciation/</span>
+
+                    <div class="popup-section">
+                        <span class="popup-label">DEFINITION</span>
+                        <p class="popup-text" id="popup-definition">Definition...</p>
+                    </div>
+
+                    <div class="popup-section">
+                        <span class="popup-label">EXAMPLE</span>
+                        <p class="popup-text example" id="popup-example">Example...</p>
+                    </div>
+
+                    <button class="btn-primary-solid w-100 mt-16" id="add-to-vocab-btn"><i
+                            class="fa-regular fa-bookmark"></i> Save to Dictionary</button>
+
+                    <div class="popup-footer">
+                        <span><i class="fa-solid fa-book-open" style="color: #cbd5e1; margin-right: 4px;"></i> ENG
+                            VOCAB LEARNER PRO</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</template>

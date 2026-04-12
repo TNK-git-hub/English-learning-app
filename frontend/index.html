@@ -4,9 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EngLearn - Master English</title>
-    <!-- Custom Styles -->
+    <title>LearnUP - Master English</title>
+    <meta name="description" content="Learn English through articles, vocabulary, and interactive quizzes.">
+
+    <!-- ===== Modular CSS ===== -->
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/articles.css">
+    <link rel="stylesheet" href="styles/vocabulary.css">
+    <link rel="stylesheet" href="styles/admin.css">
+
+    <!-- Legacy CSS (giữ lại để đảm bảo tương thích, sẽ xóa sau khi verify) -->
     <link rel="stylesheet" href="style.css">
+
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -14,266 +26,19 @@
 </head>
 
 <body>
+    <!-- SPA Root Container -->
     <div id="app-container" class="app-container">
-        <!-- SPA views will be injected here by app.js -->
+        <!-- Views will be injected here by app.js -->
     </div>
 
-    <!-- ========== LOGIN TEMPLATE ========== -->
-    <template id="login-template">
-        <div class="top-bar">
-            <div class="logo">
-                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                        style="transform: rotate(-45deg);"></i></span>
-                EngVocabLearn
-            </div>
-            <div class="top-bar-right">
-            </div>
-        </div>
-        <div class="main-wrapper" id="login-view">
-            <div class="header-icon"><i class="fa-solid fa-lock-open"></i></div>
-            <h1 class="page-title">Welcome Back</h1>
-            <p class="page-subtitle">Log in to continue your learning journey.</p>
-
-            <div class="auth-card">
-                <form id="login-form">
-                    <div id="login-error-message"
-                        style="display: none; background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i>
-                        <span>Invalid email or password. Please try again.</span>
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <div class="input-wrapper">
-                            <input type="email" id="login-email" placeholder="alex@example.com" required>
-                            <i class="fa-regular fa-envelope input-icon"></i>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-wrapper">
-                            <input type="password" id="login-password" placeholder="1234" required>
-                            <i class="fa-regular fa-eye input-icon"></i>
-                        </div>
-                    </div>
-
-                    <div class="flex-between" style="margin-bottom: 24px;">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox"> Remember me
-                        </label>
-                        <a href="#" class="link-blue" style="margin: 0; font-size: 13px;">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" class="btn-primary">Log In <i class="fa-solid fa-arrow-right"
-                            style="margin-left: 8px;"></i></button>
-                </form>
-
-                <div class="bottom-link">
-                    Don't have an account? <a href="#" id="go-to-register">Register account</a>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <!-- ========== REGISTER TEMPLATE ========== -->
-    <template id="register-template">
-        <div class="top-bar">
-            <div class="logo">
-                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                        style="transform: rotate(-45deg);"></i></span>
-                EngVocabLearn
-            </div>
-            <div class="top-bar-right">
-                <span class="text-gray">Already have an account?</span>
-                <a href="#" id="go-to-login" class="link-blue">Login</a>
-            </div>
-        </div>
-        <div class="main-wrapper" id="register-view">
-            <div class="header-icon"><i class="fa-solid fa-rocket"></i></div>
-            <h1 class="page-title">Start your journey</h1>
-            <p class="page-subtitle">Master English with simple, daily habits.</p>
-
-            <div class="auth-card">
-                <form id="register-form">
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <div class="input-wrapper">
-                            <input type="email" id="reg-email" placeholder="email@example.com" required>
-                            <i class="fa-regular fa-envelope input-icon"></i>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-wrapper">
-                            <input type="password" id="reg-password" placeholder="••••••••" required>
-                        </div>
-                        <p class="hint-text">Must be at least 8 characters long.</p>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 24px;">
-                        <label>Confirm Password</label>
-                        <div class="input-wrapper" id="reg-confirm-wrapper">
-                            <input type="password" id="reg-confirm" placeholder="••••••••" required>
-                        </div>
-                        <p class="error-text" id="reg-confirm-error" style="display: none;"><i
-                                class="fa-solid fa-circle-exclamation"></i> Passwords do not match</p>
-                    </div>
-
-                    <button type="submit" class="btn-primary">Register <i class="fa-solid fa-arrow-right"
-                            style="margin-left: 8px;"></i></button>
-                </form>
-            </div>
-        </div>
-    </template>
-
-    <!-- ========== ARTICLES TEMPLATE ========== -->
-    <template id="articles-template">
-        <div class="articles-layout">
-            <!-- Header Navigation -->
-            <header class="main-header">
-                <div class="logo">
-                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                            style="transform: rotate(-45deg);"></i></span>
-                    EngVocabLearn
-                </div>
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search articles...">
-                </div>
-                <nav class="main-nav">
-                    <a href="#" class="active" id="nav-articles-articles">Articles</a>
-                    <a href="#" id="nav-articles-library">Library</a>
-                    <a href="#" id="nav-articles-quiz">Quiz</a>
-                    <a href="#" id="nav-articles-dashboard">Dashboard</a>
-                </nav>
-                <div class="user-profile">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
-                </div>
-            </header>
-
-            <div class="page-body">
-                <!-- Sidebar Filters -->
-                <aside class="sidebar-filters">
-                    <div class="filter-header">
-                        <h2>Filters</h2>
-                        <button class="btn-text">Reset All</button>
-                    </div>
-
-                    <div class="filter-section">
-                        <h3>TOPICS</h3>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" value="Sport">
-                            <span class="checkmark"></span>
-                            Sport
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" value="Business">
-                            <span class="checkmark"></span>
-                            Business
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" value="Culture">
-                            <span class="checkmark"></span>
-                            Culture
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" value="Science">
-                            <span class="checkmark"></span>
-                            Science
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" value="Lifestyle">
-                            <span class="checkmark"></span>
-                            Lifestyle
-                        </label>
-                        <i class="fa-solid fa-chevron-down expand-icon"></i>
-                    </div>
-
-                    <div class="filter-section">
-                        <h3>DIFFICULTY LEVEL</h3>
-                        <label class="custom-radio">
-                            <input type="radio" name="difficulty" value="Beginner">
-                            <span class="radiomark"></span>
-                            Beginner
-                        </label>
-                        <label class="custom-radio">
-                            <input type="radio" name="difficulty" value="Intermediate">
-                            <span class="radiomark"></span>
-                            Intermediate
-                        </label>
-                        <label class="custom-radio">
-                            <input type="radio" name="difficulty" value="Advanced">
-                            <span class="radiomark"></span>
-                            Advanced
-                        </label>
-                    </div>
-
-                    <button class="btn-primary w-100 apply-btn" style="margin-top: auto; margin-bottom: 20px;">Apply
-                        Filters</button>
-
-
-                </aside>
-
-                <!-- Content Area -->
-                <main class="content-area">
-                    <div class="content-header">
-                        <div class="discover-texts">
-                            <h1>Discover</h1>
-                            <p>Showing articles based on your interests</p>
-                        </div>
-                        <div class="view-toggles">
-                            <button class="active"><i class="fa-solid fa-grip"></i></button>
-                            <button><i class="fa-solid fa-bars"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="active-filters" style="display: none;">
-                        <span class="filter-label">ACTIVE:</span>
-                        <div id="active-tags-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-                    </div>
-
-                    <div class="articles-grid" id="articles-grid">
-                        <!-- Articles sẽ được load động từ API -->
-                        <div class="loading-message" id="articles-loading"
-                            style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
-                            <i class="fa-solid fa-spinner fa-spin"
-                                style="font-size: 32px; margin-bottom: 16px; display: block;"></i>
-                            Loading articles...
-                        </div>
-                    </div>
-
-                    <div class="pagination">
-                        <button class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
-                        <button class="page-btn active">1</button>
-                        <button class="page-btn">2</button>
-                        <button class="page-btn">3</button>
-                        <span class="ellipsis">...</span>
-                        <button class="page-btn">12</button>
-                        <button class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
-                </main>
-            </div>
-
-            <footer class="full-footer"
-                style="margin-top: auto; border-radius: 0; padding: 24px 48px; border-top: 1px solid #e2e8f0;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap"
-                            style="transform: rotate(-45deg);"></i></span>
-                    <strong style="color: #0f172a;">EngVocabLearn</strong>
-                </div>
-                <div>© 2026 EngVocabLearn. All rights reserved.</div>
-                <div class="footer-links">
-                </div>
-            </footer>
-        </div>
-    </template>
-
-    <!-- ========== USER DASHBOARD TEMPLATE ========== -->
+    <!-- User Dashboard Template (kept inline — largest template) -->
     <template id="user-dashboard-template">
         <div class="articles-layout dash-layout">
             <header class="main-header">
                 <div class="logo">
                     <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
                             style="transform: rotate(-45deg);"></i></span>
-                    EngVocabLearn
+                    LearnUP
                 </div>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -285,8 +50,22 @@
                     <a href="#" id="nav-dash-quiz">Quiz</a>
                     <a href="#" class="active" id="nav-dash-dashboard">Dashboard</a>
                 </nav>
-                <div class="user-profile">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                <div class="user-profile-dropdown">
+                    <div class="user-profile-toggle" title="Account menu">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <div class="user-dropdown-header">
+                            <span class="user-dropdown-name">User</span>
+                        </div>
+                        <a href="#" class="user-dropdown-item" onclick="animateTransition('articles'); return false;">
+                            <i class="fa-solid fa-newspaper"></i> Articles
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="#" class="user-dropdown-item logout-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
                 </div>
             </header>
 
@@ -401,7 +180,6 @@
                                 Learning</h3>
                             <div class="continue-grid" id="dash-continue-learning-grid"
                                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                <!-- Populated dynamically -->
                                 <div class="dash-continue-card">
                                     <div class="continue-tag"><i class="fa-solid fa-book-open"></i> LESSON</div>
                                     <h4 class="truncate-1">Advanced Business Idioms</h4>
@@ -492,7 +270,6 @@
                                         </div>
                                     </div>
                                     <div style="flex: 1;">
-                                        <!-- Step dots -->
                                         <div class="step-dots" style="display: flex; gap: 8px; margin-bottom: 16px;"
                                             id="reading-step-dots">
                                             <div class="step-dot completed"><i class="fa-solid fa-check"></i></div>
@@ -510,9 +287,8 @@
                             </div>
                         </div>
 
-                        <!-- Right Column: Sidebar Replacements -->
+                        <!-- Right Column: Sidebar -->
                         <div class="dash-col" style="display: flex; flex-direction: column; gap: 20px;">
-                            <!-- Weekly Tip Card -->
                             <div class="dash-card bg-light-blue"
                                 style="background: #f0fdfa; border: 1px solid #ccfbf1; padding: 20px;">
                                 <h4
@@ -521,8 +297,6 @@
                                 <p style="color: #0f172a; font-size: 14px; line-height: 1.6;">Reading out loud helps
                                     improve your pronunciation and confidence simultaneously.</p>
                             </div>
-
-                            <!-- Optional Practice -->
                             <div style="display: flex; flex-direction: column; gap: 16px;">
                                 <div class="dash-card flex-1"
                                     style="display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; transition: transform 0.2s;">
@@ -558,9 +332,9 @@
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span class="logo-icon logo-icon-sm" style="margin: 0;"><i class="fa-solid fa-graduation-cap"
                             style="transform: rotate(-45deg);"></i></span>
-                    <strong style="color: #0f172a;">EngVocabLearn</strong>
+                    <strong style="color: #0f172a;">LearnUP</strong>
                 </div>
-                <div>© 2026 EngVocabLearn. All rights reserved.</div>
+                <div>© 2026 LearnUP. All rights reserved.</div>
                 <div class="footer-links">
                     <span style="color: #94a3b8; font-size: 12px; letter-spacing: 1px; font-weight: 600;">FOCUS •
                         CONSISTENCY • FLUENCY</span>
@@ -569,147 +343,37 @@
         </div>
     </template>
 
+    <!-- ===== Modular JS – Load Order Matters ===== -->
+    <!-- 1. Utils (no dependencies) -->
+    <script src="utils/state.js"></script>
+    <script src="utils/helpers.js"></script>
+    <script src="utils/auth.js"></script>
+    <script src="utils/router.js"></script>
 
+    <!-- 2. Services (depend on utils) -->
+    <script src="services/api.js"></script>
+    <script src="services/auth-service.js"></script>
+    <script src="services/article-service.js"></script>
+    <script src="services/vocabulary-service.js"></script>
 
-    <!-- ========== VOCABULARY TEMPLATE ========== -->
-    <template id="vocabulary-template">
-        <div class="articles-layout vocabulary-layout">
-            <!-- Header Navigation -->
-            <header class="main-header">
-                <div class="logo" style="cursor: pointer;" id="vocab-to-articles">
-                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                            style="transform: rotate(-45deg);"></i></span>
-                    EngVocabLearn
-                </div>
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search saved words...">
-                </div>
-                <nav class="main-nav">
-                    <a href="#" id="nav-vocab-articles">Articles</a>
-                    <a href="#" class="active" id="nav-vocab-library">Library</a>
-                    <a href="#" id="nav-vocab-quiz">Quiz</a>
-                    <a href="#" id="nav-vocab-dashboard">Dashboard</a>
-                </nav>
-                <div class="user-profile">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
-                </div>
-            </header>
+    <!-- 3. Components (depend on utils + services) -->
+    <script src="components/header.js"></script>
+    <script src="components/pagination.js"></script>
+    <script src="components/article-card.js"></script>
+    <script src="components/vocab-popup.js"></script>
 
-            <div class="page-body" style="background-color: #f7f9fc;">
-                <main class="content-area vocab-content">
-                    <div class="vocab-header">
-                        <div class="vocab-title">
-                            <h1>My Vocabulary</h1>
-                            <p>Curate and master your personal word collection</p>
-                        </div>
-                    </div>
+    <!-- 4. Pages (depend on everything above) -->
+    <script src="pages/auth/login.js"></script>
+    <script src="pages/auth/register.js"></script>
+    <script src="pages/articles/articles-list.js"></script>
+    <script src="pages/articles/article-detail.js"></script>
+    <script src="pages/vocabulary/vocabulary.js"></script>
+    <script src="pages/quiz/quiz.js"></script>
 
-                    <div class="vocab-controls">
-                        <div class="search-input-wrapper">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="vocab-search" placeholder="Search within your saved words...">
-                        </div>
-                    </div>
+    <!-- 5. Admin -->
+    <script src="admin/admin.js"></script>
 
-                    <div class="vocab-table-container">
-                        <table class="vocab-table">
-                            <thead>
-                                <tr>
-                                    <th>WORD</th>
-                                    <th>MEANING</th>
-                                    <th>EXAMPLE SENTENCE</th>
-                                    <th>ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vocab-tbody">
-                                <!-- Rows will be injected by app.js -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-footer">
-                        <span class="showing-text" id="vocab-showing-text">Showing words</span>
-                        <div class="pagination" id="vocab-pagination">
-                            <!-- Pagination will be injected by app.js -->
-                        </div>
-                    </div>
-                </main>
-            </div>
-        </div>
-    </template>
-
-    <!-- ========== ARTICLE DETAIL TEMPLATE ========== -->
-    <template id="article-detail-template">
-        <div class="articles-layout article-detail-layout" style="background-color: #fff;">
-            <!-- Header Navigation -->
-            <header class="main-header">
-                <div class="logo" style="cursor: pointer;" id="detail-to-articles">
-                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                            style="transform: rotate(-45deg);"></i></span>
-                    EngVocabLearn
-                </div>
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search articles...">
-                </div>
-                <nav class="main-nav">
-                    <a href="#" id="nav-detail-articles">Articles</a>
-                    <a href="#" id="nav-detail-library">Library</a>
-                    <a href="#" id="nav-detail-quiz">Quiz</a>
-                    <a href="#" id="nav-detail-dashboard">Dashboard</a>
-                </nav>
-                <div class="user-profile">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
-                </div>
-            </header>
-
-            <div class="page-body">
-                <main class="content-area detail-content">
-                    <div class="article-hero-image" id="detail-article-image">
-                    </div>
-
-                    <h1 class="article-detail-title" id="detail-article-title">Article Title</h1>
-                    <p class="article-detail-subtitle" id="detail-article-subtitle">Article Subtitle</p>
-
-                    <div class="article-text-body" id="detail-article-body">
-                        <!-- Content will be injected here -->
-                    </div>
-
-                    <!-- Popups -->
-                    <!-- Vocab Popup -->
-                    <div class="interactive-popup vocab-popup" id="vocab-popup">
-                        <button class="popup-close"><i class="fa-solid fa-xmark"></i></button>
-                        <div class="popup-header-row">
-                            <h3 class="popup-word" id="popup-word">Word</h3>
-                            <button class="btn-audio"><i class="fa-solid fa-volume-high"></i></button>
-                        </div>
-                        <span class="popup-pronunciation" id="popup-phonetic">/pronunciation/</span>
-
-                        <div class="popup-section">
-                            <span class="popup-label">DEFINITION</span>
-                            <p class="popup-text" id="popup-definition">Definition...</p>
-                        </div>
-
-                        <div class="popup-section">
-                            <span class="popup-label">EXAMPLE</span>
-                            <p class="popup-text example" id="popup-example">Example...</p>
-                        </div>
-
-                        <button class="btn-primary-solid w-100 mt-16" id="add-to-vocab-btn"><i
-                                class="fa-regular fa-bookmark"></i> Save to Dictionary</button>
-
-                        <div class="popup-footer">
-                            <span><i class="fa-solid fa-book-open" style="color: #cbd5e1; margin-right: 4px;"></i> ENG
-                                VOCAB LEARNER PRO</span>
-                        </div>
-                    </div>
-                </main>
-            </div>
-        </div>
-    </template>
-
-    <!-- Application Script -->
+    <!-- 6. Main App (bootstrapper – loads last) -->
     <script src="app.js"></script>
 </body>
 

@@ -552,6 +552,125 @@ body {
     border: 2px solid #e2e8f0;
 }
 
+/* ===== User Profile Dropdown ===== */
+.user-profile-dropdown {
+    position: relative;
+}
+
+.user-profile-toggle {
+    cursor: pointer;
+    border-radius: 50%;
+    transition: box-shadow 0.2s;
+}
+
+.user-profile-toggle:hover {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-radius: 50%;
+}
+
+.user-profile-toggle img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+    display: block;
+}
+
+.user-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    min-width: 200px;
+    z-index: 999;
+    overflow: hidden;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+.user-dropdown-menu.show {
+    display: block;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.user-dropdown-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    display: block;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 0;
+}
+
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+    cursor: pointer;
+}
+
+.user-dropdown-item:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+.user-dropdown-item i {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.user-dropdown-item:hover i {
+    color: #64748b;
+}
+
+.user-dropdown-item.logout-btn {
+    color: #dc2626;
+}
+
+.user-dropdown-item.logout-btn:hover {
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.user-dropdown-item.logout-btn i {
+    color: #dc2626;
+}
+
+.user-dropdown-item.logout-btn:hover i {
+    color: #b91c1c;
+}
+
 /* Page Body */
 .page-body {
     display: flex;

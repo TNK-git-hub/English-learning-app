@@ -1,43 +1,29 @@
+"""
+Users Router — API endpoints cho User (login, register, profile).
+Thin layer — chỉ nhận request, gọi service, trả response.
+"""
 from fastapi import APIRouter, Depends
-from models.schemas import LoginRequest
 from config.database import get_db
-import bcrypt
+from schemas.user_schema import LoginRequest, RegisterRequest
+from services import user_service
+from middleware.auth_middleware import get_current_user
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
 
 @router.post("/login")
-def login(request: LoginRequest, db = Depends(get_db)):
-    """
-    Login endpoint — validate against database.
-    """
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (request.email,))
-    user = cursor.fetchone()
-    cursor.close()
+def login(request: LoginRequest, conn=Depends(get_db)):
+    """Đăng nhập — trả về JWT token."""
+    return user_service.login(request.email, request.password, conn)
 
-    if not user:
-        return {"status": "Error", "message": "Invalid email or password. Please try again."}
 
-    password_matched = False
-    try:
-        if bcrypt.checkpw(request.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            password_matched = True
-    except Exception:
-        if request.password == user['password_hash']:
-            password_matched = True
+@router.post("/register")
+def register(request: RegisterRequest, conn=Depends(get_db)):
+    """Đăng ký tài khoản mới."""
+    return user_service.register(request.email, request.password, request.name, conn)
 
-    if not password_matched:
-        return {"status": "Error", "message": "Invalid email or password. Please try again."}
 
-    return {
-        "status": "Success",
-        "message": "Đăng nhập thành công",
-        "token": "mock_token_for_development",
-        "user": {
-            "userId": user['id'],
-            "email": user['email'],
-            "name": user['name'],
-            "role": user['role']
-        }
-    }
+@router.get("/profile")
+def get_profile(current_user=Depends(get_current_user), conn=Depends(get_db)):
+    """Lấy thông tin user hiện tại (protected)."""
+    return user_service.get_profile(current_user["sub"], conn)

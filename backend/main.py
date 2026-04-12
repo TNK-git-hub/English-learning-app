@@ -1,10 +1,21 @@
+"""
+LearnUP API — FastAPI Application Entry Point.
+Chỉ khởi tạo app, mount middleware & routers.
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import articles, users
+from fastapi.staticfiles import StaticFiles
+from routers import articles, users, tags, vocabulary
+from config.settings import APP_HOST, APP_PORT
 
-app = FastAPI(title="LearnUp API", version="1.0.0")
+app = FastAPI(
+    title="LearnUp API",
+    version="2.0.0",
+    description="English Learning Platform API — Router-Service-Repository Architecture",
+    redirect_slashes=False,
+)
 
-# CORS — cho phép frontend gọi API
+# ===== CORS — cho phép frontend gọi API =====
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Trong production nên giới hạn domain
@@ -13,15 +24,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount routers
+# ===== Mount Routers =====
 app.include_router(users.router)
 app.include_router(articles.router)
+app.include_router(tags.router)
+app.include_router(vocabulary.router)
 
-@app.get("/api/health")
+
+# ===== Health Check =====
+@app.get("/api/health", tags=["System"])
 def health_check():
-    return {"status": "OK", "message": "LearnUp API is running (FastAPI)."}
+    """API health check endpoint."""
+    return {
+        "status": "OK",
+        "message": "LearnUp API is running (FastAPI v2.0 — Layered Architecture).",
+        "version": "2.0.0"
+    }
 
 
+# ===== Entry Point =====
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run("main:app", host=APP_HOST, port=APP_PORT, reload=True)

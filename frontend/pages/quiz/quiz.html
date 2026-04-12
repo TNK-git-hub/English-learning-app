@@ -1,0 +1,48 @@
+<!-- Quiz Template [MỚI] — Placeholder cho tính năng quiz -->
+<template id="quiz-template">
+    <div class="articles-layout quiz-layout">
+        <header class="main-header">
+            <div class="logo" style="cursor: pointer;" id="quiz-to-articles">
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
+                        style="transform: rotate(-45deg);"></i></span>
+                LearnUP
+            </div>
+            <nav class="main-nav">
+                <a href="#" id="nav-quiz-articles">Articles</a>
+                <a href="#" id="nav-quiz-library">Library</a>
+                <a href="#" class="active" id="nav-quiz-quiz">Quiz</a>
+                <a href="#" id="nav-quiz-dashboard">Dashboard</a>
+            </nav>
+            <div class="user-profile-dropdown">
+                <div class="user-profile-toggle" title="Account menu">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
+                </div>
+                <div class="user-dropdown-menu">
+                    <div class="user-dropdown-header">
+                        <span class="user-dropdown-name">User</span>
+                    </div>
+                    <a href="#" class="user-dropdown-item" onclick="animateTransition('user-dashboard'); return false;">
+                        <i class="fa-solid fa-gauge"></i> Dashboard
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="#" class="user-dropdown-item logout-btn">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body" style="background-color: #f7f9fc;">
+            <main class="content-area" style="max-width: 800px; margin: 0 auto; padding: 48px;">
+                <h1 style="font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Quiz</h1>
+                <p style="color: #64748b; margin-bottom: 32px;">Test your knowledge with interactive quizzes</p>
+                
+                <div style="text-align: center; padding: 80px 20px; color: #94a3b8;">
+                    <i class="fas fa-puzzle-piece" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    <p style="font-size: 16px;">Quiz feature coming soon!</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Practice your vocabulary with interactive exercises.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+</template>
