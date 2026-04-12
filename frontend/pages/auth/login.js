@@ -13,9 +13,17 @@ function attachLoginEvents() {
         loginBtn.addEventListener('click', async () => {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
+            const errorBox = document.getElementById('login-error-box');
+            const errorText = document.getElementById('login-error-text');
+
+            // Ẩn error box cũ
+            if (errorBox) errorBox.style.display = 'none';
 
             if (!email || !password) {
-                alert('Please enter email and password');
+                if (errorBox && errorText) {
+                    errorText.textContent = 'Please enter your email and password.';
+                    errorBox.style.display = 'flex';
+                }
                 return;
             }
 
@@ -28,7 +36,10 @@ function attachLoginEvents() {
                 saveUser(data.user || { name: email.split('@')[0], email: email });
                 animateTransition('articles');
             } catch (error) {
-                alert(error.message || 'Login failed. Please check your credentials.');
+                if (errorBox && errorText) {
+                    errorText.textContent = 'Invalid email or password. Please try again.';
+                    errorBox.style.display = 'flex';
+                }
             } finally {
                 loginBtn.textContent = 'Sign In';
                 loginBtn.disabled = false;

@@ -11,28 +11,50 @@ function attachRegisterEvents() {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
+            const nameEl = document.getElementById('reg-name');
+            const emailEl = document.getElementById('reg-email');
+            const passwordEl = document.getElementById('reg-password');
+            const confirmEl = document.getElementById('reg-confirm');
+            
+            const errorBox = document.getElementById('register-error-box');
+            const errorText = document.getElementById('register-error-text');
+            const confirmErrorEl = document.getElementById('reg-confirm-error');
 
-            // Validate
-            if (!name) {
-                alert('Please enter your name');
-                return;
+            if (errorBox) errorBox.style.display = 'none';
+            if (confirmErrorEl) confirmErrorEl.style.display = 'none';
+
+            // Reset borders
+            [nameEl, emailEl, passwordEl, confirmEl].forEach(el => {
+                if(el) el.style.borderColor = '#cbd5e1'; 
+            });
+
+            const name = nameEl.value.trim();
+            const email = emailEl.value.trim();
+            const password = passwordEl.value;
+            const confirm = confirmEl.value;
+
+            let hasError = false;
+
+            if (!name) { nameEl.style.borderColor = 'red'; hasError = true; }
+            if (!email) { emailEl.style.borderColor = 'red'; hasError = true; }
+            if (!password || password.length < 8) { passwordEl.style.borderColor = 'red'; hasError = true; }
+            if (!confirm || password !== confirm) { 
+                confirmEl.style.borderColor = 'red'; 
+                if (confirmErrorEl && password !== confirm) confirmErrorEl.style.display = 'block';
+                hasError = true; 
             }
-            if (password !== confirm) {
-                const errorEl = document.getElementById('reg-confirm-error');
-                if (errorEl) errorEl.style.display = 'block';
-                return;
-            }
+
+            if (hasError) return;
 
             try {
                 await registerAPI({ name, email, password });
                 alert('Registration successful! Please login.');
                 animateTransition('login');
             } catch (error) {
-                alert(error.message || 'Registration failed.');
+                if (errorBox && errorText) {
+                    errorText.textContent = 'Email already registered.';
+                    errorBox.style.display = 'flex';
+                }
             }
         });
     }
