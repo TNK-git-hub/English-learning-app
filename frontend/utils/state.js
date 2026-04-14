@@ -14,4 +14,10 @@ const AppState = {
     viewMode: 'grid',          // 'grid' | 'list'
     bookmarkedArticles: [],
     vocabularyList: [],
+    
+    // Quiz State
+    currentQuiz: null,
+    quizScore: 0,
+    quizActiveQuestion: 0,
+    quizResults: null
 };

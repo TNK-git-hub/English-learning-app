@@ -1,10 +1,10 @@
-<!-- Quiz Template [MỚI] — Placeholder cho tính năng quiz -->
+<!-- Quiz Template — The learning assessment engine -->
 <template id="quiz-template">
     <div class="articles-layout quiz-layout">
+        <!-- Header -->
         <header class="main-header">
             <div class="logo" style="cursor: pointer;" id="quiz-to-articles">
-                <span class="logo-icon"><i class="fa-solid fa-graduation-cap"
-                        style="transform: rotate(-45deg);"></i></span>
+                <span class="logo-icon"><i class="fa-solid fa-graduation-cap" style="transform: rotate(-45deg);"></i></span>
                 LearnUP
             </div>
             <nav class="main-nav">
@@ -14,7 +14,7 @@
                 <a href="#" id="nav-quiz-dashboard">Dashboard</a>
             </nav>
             <div class="user-profile-dropdown">
-                <div class="user-profile-toggle" title="Account menu">
+                <div class="user-profile-toggle">
                     <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
                 </div>
                 <div class="user-dropdown-menu">
@@ -32,17 +32,148 @@
             </div>
         </header>
 
-        <div class="page-body" style="background-color: #f7f9fc;">
-            <main class="content-area" style="max-width: 800px; margin: 0 auto; padding: 48px;">
-                <h1 style="font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Quiz</h1>
-                <p style="color: #64748b; margin-bottom: 32px;">Test your knowledge with interactive quizzes</p>
-                
-                <div style="text-align: center; padding: 80px 20px; color: #94a3b8;">
-                    <i class="fas fa-puzzle-piece" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                    <p style="font-size: 16px;">Quiz feature coming soon!</p>
-                    <p style="font-size: 14px; margin-top: 8px;">Practice your vocabulary with interactive exercises.</p>
+        <div class="page-body" style="background-color: #f7f9fc; min-height: calc(100vh - 73px);">
+            <main class="quiz-container">
+                <!-- State 1: Selection View (Default) -->
+                <div id="quiz-view-selection">
+                    <div class="section-header" style="margin-bottom: 32px;">
+                        <h1 style="font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Knowledge Quizzes</h1>
+                        <p style="color: #64748b; font-size: 16px; margin-top: 8px;">Challenge yourself and track your learning progress.</p>
+                    </div>
+
+                    <div class="quiz-selection-grid" id="quiz-list-container">
+                        <!-- Quizzes will be injected here -->
+                        <div class="quiz-card" data-quiz-id="q_vocab">
+                            <span class="category-tag">Library</span>
+                            <h3>Vocabulary Mastery</h3>
+                            <p>Test your knowledge on the core vocabulary from your learning library.</p>
+                            <div class="quiz-card-footer">
+                                <div class="quiz-card-meta">
+                                    <span><i class="fa-regular fa-clock"></i> 10 mins</span>
+                                    <span><i class="fa-solid fa-signal"></i> Mixed</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
+                            </div>
+                        </div>
+
+                        <div class="quiz-card" data-quiz-id="q1">
+                            <span class="category-tag">Vocabulary</span>
+                            <h3>Business Idioms Master</h3>
+                            <p>Test your understanding of common professional expressions used in the workplace.</p>
+                            <div class="quiz-card-footer">
+                                <div class="quiz-card-meta">
+                                    <span><i class="fa-regular fa-clock"></i> 5 mins</span>
+                                    <span><i class="fa-solid fa-signal"></i> Intermediate</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
+                            </div>
+                        </div>
+
+                        <div class="quiz-card" data-quiz-id="q2">
+                            <span class="category-tag">Grammar</span>
+                            <h3>Present Perfect vs Past Simple</h3>
+                            <p>Clear up the confusion between these two essential English tenses with practical examples.</p>
+                            <div class="quiz-card-footer">
+                                <div class="quiz-card-meta">
+                                    <span><i class="fa-regular fa-clock"></i> 8 mins</span>
+                                    <span><i class="fa-solid fa-signal"></i> Beginner</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
+                            </div>
+                        </div>
+
+                        <div class="quiz-card" data-quiz-id="q3">
+                            <span class="category-tag">Phrasal Verbs</span>
+                            <h3>Travel & Exploration</h3>
+                            <p>Learn verbs like 'set off', 'check in', and 'get away' through contextual questions.</p>
+                            <div class="quiz-card-footer">
+                                <div class="quiz-card-meta">
+                                    <span><i class="fa-regular fa-clock"></i> 6 mins</span>
+                                    <span><i class="fa-solid fa-signal"></i> Advanced</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- State 2: Active Quiz View (Hidden by default) -->
+                <div id="quiz-view-active" style="display: none;">
+                    <div class="quiz-active-wrapper">
+                        <div class="quiz-progress-header">
+                            <div class="quiz-progress-bar">
+                                <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+                            </div>
+                            <div class="quiz-question-count">Question <span id="current-q-index">1</span> of <span id="total-q-count">10</span></div>
+                        </div>
+
+                        <div id="quiz-question-container">
+                            <h2 class="quiz-question-text" id="quiz-question-text">Loading question...</h2>
+                            <div class="quiz-options-list" id="quiz-options-list">
+                                <!-- Options injected here -->
+                            </div>
+
+                            <div class="quiz-explanation-box" id="quiz-explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span>Explanation</span>
+                                </div>
+                                <div class="explanation-text" id="quiz-explanation-text">
+                                    Explanation will appear here.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-footer">
+                            <button class="btn-outline" id="quiz-exit-btn">Exit Quiz</button>
+                            <button class="btn-primary" id="quiz-next-btn" disabled>Check Answer</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- State 3: Result View (Hidden by default) -->
+                <div id="quiz-view-result" style="display: none;">
+                    <div class="quiz-active-wrapper">
+                        <div class="quiz-result-card">
+                            <div class="result-score-circle">
+                                <svg width="160" height="160" viewBox="0 0 160 160">
+                                    <circle cx="80" cy="80" r="70" fill="transparent" stroke="#f1f5f9" stroke-width="12"></circle>
+                                    <circle cx="80" cy="80" r="70" fill="transparent" stroke="#3b82f6" stroke-width="12" 
+                                            stroke-dasharray="439.8" stroke-dashoffset="439.8" id="result-score-ring"
+                                            style="transition: stroke-dashoffset 1.5s ease-out; transform: rotate(-90deg); transform-origin: center;"></circle>
+                                </svg>
+                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <span class="result-score-val" id="result-score-val">0%</span>
+                                    <span class="result-score-label">SCORE</span>
+                                </div>
+                            </div>
+                            
+                            <h2 class="result-message" id="result-message">Well Done!</h2>
+                            <p class="result-sub" id="result-sub">You've completed the quiz. Great effort on your learning journey!</p>
+                            
+                            <div style="display: flex; justify-content: center; gap: 16px;">
+                                <button class="btn-outline" id="result-retry-btn">Try Again</button>
+                                <button class="btn-primary" id="result-finish-btn">Finish</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
+        </div>
+
+        <!-- Custom Exit Confirmation Modal -->
+        <div class="quiz-modal-overlay" id="quiz-exit-modal">
+            <div class="quiz-modal">
+                <div class="quiz-modal-icon">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <h3 class="quiz-modal-title">Exit Quiz?</h3>
+                <p class="quiz-modal-text">Your progress in this quiz will be lost. Are you sure you want to leave?</p>
+                <div class="quiz-modal-actions">
+                    <button class="btn-outline" id="quiz-exit-cancel">Stay & Finish</button>
+                    <button class="btn-primary btn-danger" id="quiz-exit-confirm">Yes, Exit</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
