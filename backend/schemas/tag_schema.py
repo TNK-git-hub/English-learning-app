@@ -15,6 +15,10 @@ class TagCreateRequest(BaseModel):
     name: str
 
 
+class TagUpdateRequest(BaseModel):
+    name: str
+
+
 class TagsListResponse(BaseModel):
     success: bool = True
     data: List[TagResponse]

@@ -34,7 +34,10 @@ function attachLoginEvents() {
                 const data = await loginAPI(email, password);
                 setToken(data.token);
                 saveUser(data.user || { name: email.split('@')[0], email: email });
-                animateTransition('articles');
+
+                // Redirect based on role
+                const destination = data.user?.role === 'admin' ? 'admin-articles' : 'articles';
+                animateTransition(destination);
             } catch (error) {
                 if (errorBox && errorText) {
                     errorText.textContent = 'Invalid email or password. Please try again.';

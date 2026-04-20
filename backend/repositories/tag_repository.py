@@ -50,3 +50,15 @@ def delete(conn, tag_id: int) -> bool:
         return cursor.rowcount > 0
     finally:
         cursor.close()
+
+
+def update(conn, tag_id: int, name: str) -> bool:
+    """Đổi tên tag theo ID."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE tags SET name = %s WHERE id = %s", (name, tag_id))
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        cursor.close()
+

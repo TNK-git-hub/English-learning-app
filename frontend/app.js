@@ -21,8 +21,10 @@ const TEMPLATE_PATHS = [
  */
 const PROTECTED_VIEWS = [
     'articles', 'article-detail', 'vocabulary', 'quiz',
-    'user-dashboard', 'admin-articles', 'admin-categories'
+    'user-dashboard', 'admin-articles', 'admin-categories', 'admin-users'
 ];
+
+const ADMIN_VIEWS = ['admin-articles', 'admin-categories', 'admin-users'];
 
 /**
  * Load all HTML templates into the DOM
@@ -53,6 +55,13 @@ function renderApp() {
         AppState.currentView = 'login';
     }
 
+    // ADMIN GUARD: redirect non-admins away from admin pages
+    if (ADMIN_VIEWS.includes(AppState.currentView)) {
+        if (!AppState.user || AppState.user.role !== 'admin') {
+            AppState.currentView = 'articles';
+        }
+    }
+
     // Map view names to template IDs and event handlers
     const viewConfig = {
         'login':            { templateId: 'login-template',          events: attachLoginEvents },
@@ -64,6 +73,7 @@ function renderApp() {
         'user-dashboard':   { templateId: 'user-dashboard-template', events: attachDashboardEvents },
         'admin-articles':   { templateId: 'admin-articles-template', events: attachAdminArticlesEvents },
         'admin-categories': { templateId: 'admin-categories-template', events: attachAdminCategoriesEvents },
+        'admin-users':      { templateId: 'admin-users-template',      events: attachAdminUsersEvents },
     };
 
     const config = viewConfig[AppState.currentView];
@@ -227,6 +237,15 @@ function attachAdminCategoriesEvents() {
 }
 
 /**
+ * Admin Users events — delegates to admin.js
+ */
+function attachAdminUsersEvents() {
+    if (typeof initAdminUsers === 'function') {
+        initAdminUsers();
+    }
+}
+
+/**
  * App initialization
  */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -238,7 +257,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if user is already logged in with valid token
     if (isLoggedIn()) {
-        AppState.currentView = 'articles';
+        // Restore to admin panel if user is an admin
+        AppState.currentView = AppState.user?.role === 'admin' ? 'admin-articles' : 'articles';
     } else {
         // Force login view — clear any stale state
         AppState.currentView = 'login';
