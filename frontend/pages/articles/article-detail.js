@@ -1,6 +1,6 @@
 /**
  * Article Detail Page — Render nội dung bài viết, lookup từ, popup
- * Extracted from app.js renderArticleDetail() & attachArticleDetailEvents()
+ * Redesigned: wider layout with sidebar, back nav, reading stats
  */
 
 /**
@@ -11,17 +11,124 @@ function renderArticleDetail() {
     if (!article) return;
 
     const titleEl = document.getElementById('detail-article-title');
-    const subtitleEl = document.getElementById('detail-article-subtitle');
     const bodyEl = document.getElementById('detail-article-body');
+    const headerTitle = document.getElementById('detail-header-title');
+    const categoryTag = document.getElementById('detail-category-tag');
+    const difficultyEl = document.getElementById('detail-difficulty');
+    const readTimeEl = document.getElementById('detail-read-time');
 
+    // Title
     if (titleEl) titleEl.textContent = article.title || 'Untitled';
-    if (subtitleEl) subtitleEl.textContent = article.description || '';
+    if (headerTitle) headerTitle.textContent = article.title || 'Untitled';
 
+    // Category tag
+    const tags = Array.isArray(article.tags) ? article.tags : (article.tags ? article.tags.split(',').map(t => t.trim()) : []);
+    if (categoryTag) {
+        categoryTag.textContent = tags.length > 0 ? tags[0] : 'General';
+    }
+
+    // Difficulty
+    if (difficultyEl) {
+        const difficulty = article.difficulty || 'Beginner';
+        difficultyEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    }
+
+    // Read time estimate (roughly 200 words per minute)
+    if (readTimeEl && article.content) {
+        const wordCount = article.content.split(/\s+/).length;
+        const minutes = Math.max(1, Math.ceil(wordCount / 200));
+        readTimeEl.textContent = `${minutes} min read`;
+
+        // Update words read stats
+        const wordsReadEl = document.getElementById('detail-words-read');
+        if (wordsReadEl) wordsReadEl.textContent = `0 / ${wordCount.toLocaleString()}`;
+    }
+
+    // Hero image
+    const heroEl = document.getElementById('detail-article-image');
+    if (heroEl) {
+        const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80';
+        heroEl.style.cssText += `background-image: none;`;
+        heroEl.innerHTML = '';
+        // Override the ::after pseudo-element
+        heroEl.style.setProperty('--hero-bg', `url('${imageUrl}')`);
+        // Just set a background directly
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = article.title || '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:relative;z-index:1;';
+        img.onerror = () => { img.src = 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80'; };
+        heroEl.appendChild(img);
+    }
+
+    // Content body with word lookup
     if (bodyEl && article.content) {
-        // Process text for word lookup
         const processedContent = processTextForLookup(article.content);
         bodyEl.innerHTML = processedContent;
     }
+
+    // Keywords sidebar
+    const keywordsEl = document.getElementById('detail-keywords');
+    if (keywordsEl) {
+        if (tags.length > 0) {
+            keywordsEl.innerHTML = tags.map(t => `<span class="keyword-chip">${escapeHtml(t)}</span>`).join('');
+        } else {
+            keywordsEl.innerHTML = '<span class="keyword-chip">General</span>';
+        }
+    }
+
+    // Bookmark state
+    const bookmarkBtn = document.getElementById('detail-bookmark-btn');
+    if (bookmarkBtn) {
+        const isBookmarked = AppState.bookmarkedArticles.includes(article.id);
+        const icon = bookmarkBtn.querySelector('i');
+        if (isBookmarked) {
+            bookmarkBtn.classList.add('active');
+            if (icon) icon.className = 'fas fa-bookmark';
+        } else {
+            bookmarkBtn.classList.remove('active');
+            if (icon) icon.className = 'far fa-bookmark';
+        }
+    }
+
+    // Track reading progress on scroll
+    setupReadingProgress();
+}
+
+/**
+ * Setup reading progress tracking
+ */
+function setupReadingProgress() {
+    const bodyEl = document.getElementById('detail-article-body');
+    const progressEl = document.getElementById('detail-progress');
+    const wordsReadEl = document.getElementById('detail-words-read');
+    if (!bodyEl || !progressEl) return;
+
+    const article = AppState.selectedArticle;
+    const totalWords = article && article.content ? article.content.split(/\s+/).length : 0;
+
+    const observer = new IntersectionObserver((entries) => {
+        // Simple progress: % of body scrolled into view
+    }, { threshold: Array.from({ length: 20 }, (_, i) => i * 0.05) });
+
+    // Use scroll event on nearest scrollable parent
+    const scrollParent = bodyEl.closest('.detail-page-body') || window;
+    const handleScroll = () => {
+        const rect = bodyEl.getBoundingClientRect();
+        const totalHeight = bodyEl.scrollHeight;
+        const viewportH = window.innerHeight;
+        const scrolled = Math.max(0, -rect.top + viewportH * 0.3);
+        const pct = Math.min(100, Math.round((scrolled / totalHeight) * 100));
+        
+        progressEl.textContent = `${pct}%`;
+        if (wordsReadEl) {
+            const wordsRead = Math.round((pct / 100) * totalWords);
+            wordsReadEl.textContent = `${wordsRead.toLocaleString()} / ${totalWords.toLocaleString()}`;
+        }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial call
 }
 
 /**
@@ -58,28 +165,45 @@ function attachArticleDetailEvents() {
     renderArticleDetail();
 
     // Back to articles
-    const backBtn = document.getElementById('detail-to-articles');
+    const backBtn = document.getElementById('detail-back-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => animateTransition('articles'));
     }
 
-    // Navigation links
-    const navLinks = {
-        'nav-detail-articles': 'articles',
-        'nav-detail-library': 'vocabulary',
-        'nav-detail-quiz': 'quiz',
-        'nav-detail-dashboard': 'user-dashboard',
-    };
+    // Logo click -> articles
+    const logoBtn = document.getElementById('detail-logo-home');
+    if (logoBtn) {
+        logoBtn.addEventListener('click', () => animateTransition('articles'));
+    }
 
-    Object.entries(navLinks).forEach(([id, view]) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('click', (e) => {
-                e.preventDefault();
-                animateTransition(view);
-            });
-        }
-    });
+    // Bookmark toggle in header
+    const bookmarkBtn = document.getElementById('detail-bookmark-btn');
+    if (bookmarkBtn && AppState.selectedArticle) {
+        bookmarkBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const articleId = AppState.selectedArticle.id;
+            const index = AppState.bookmarkedArticles.indexOf(articleId);
+            const icon = bookmarkBtn.querySelector('i');
+
+            if (index > -1) {
+                AppState.bookmarkedArticles.splice(index, 1);
+                bookmarkBtn.classList.remove('active');
+                if (icon) icon.className = 'far fa-bookmark';
+            } else {
+                AppState.bookmarkedArticles.push(articleId);
+                bookmarkBtn.classList.add('active');
+                if (icon) icon.className = 'fas fa-bookmark';
+            }
+            // Persist bookmarks
+            localStorage.setItem('learnup_bookmarks', JSON.stringify(AppState.bookmarkedArticles));
+        });
+    }
+
+    // Take quiz button
+    const quizBtn = document.getElementById('detail-take-quiz-btn');
+    if (quizBtn) {
+        quizBtn.addEventListener('click', () => animateTransition('quiz'));
+    }
 
     // Word lookup on click
     document.querySelectorAll('.lookup-word').forEach(wordEl => {

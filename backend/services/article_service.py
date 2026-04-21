@@ -32,19 +32,19 @@ def get_by_id(article_id: str, conn):
     return {"success": True, "data": article}
 
 
-def create_article(title: str, content: str, image_url: str, tag_ids: list, conn):
+def create_article(title: str, content: str, image_url: str, difficulty: str, tag_ids: list, conn):
     """Tạo article mới."""
-    article_id = article_repository.create(conn, title, content, image_url, tag_ids)
+    article_id = article_repository.create(conn, title, content, image_url, difficulty, tag_ids)
     return {"success": True, "message": "Article created", "id": article_id}
 
 
-def update_article(article_id: str, title: str, content: str, image_url: str, tag_ids: list, conn):
+def update_article(article_id: str, title: str, content: str, image_url: str, difficulty: str, tag_ids: list, conn):
     """Cập nhật article."""
     existing = article_repository.find_by_id(conn, article_id)
     if not existing:
         raise NotFoundException(f"Article with id '{article_id}' not found")
 
-    article_repository.update(conn, article_id, title, content, image_url, tag_ids)
+    article_repository.update(conn, article_id, title, content, image_url, difficulty, tag_ids)
     return {"success": True, "message": "Article updated"}
 
 

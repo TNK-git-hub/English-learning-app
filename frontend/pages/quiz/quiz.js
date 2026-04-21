@@ -130,6 +130,7 @@ function attachQuizEvents() {
         'nav-quiz-library': 'vocabulary',
         'nav-quiz-dashboard': 'user-dashboard',
         'quiz-to-articles': 'articles',
+        'quiz-back-to-articles': 'articles',
         'result-finish-btn': 'articles',
     };
 

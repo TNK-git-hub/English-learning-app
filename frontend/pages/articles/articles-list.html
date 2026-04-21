@@ -9,7 +9,7 @@
             </div>
             <div class="search-bar">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search articles...">
+                <input type="text" placeholder="Search articles..." id="articles-search-input">
             </div>
             <nav class="main-nav">
                 <a href="#" class="active" id="nav-articles-articles">Articles</a>
@@ -17,21 +17,27 @@
                 <a href="#" id="nav-articles-quiz">Quiz</a>
                 <a href="#" id="nav-articles-dashboard">Dashboard</a>
             </nav>
-            <div class="user-profile-dropdown">
-                <div class="user-profile-toggle" title="Account menu">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
-                </div>
-                <div class="user-dropdown-menu">
-                    <div class="user-dropdown-header">
-                        <span class="user-dropdown-name">User</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="saved-articles-toggle" id="saved-articles-toggle" title="View saved articles"
+                    style="display:flex;align-items:center;gap:6px;background:none;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.2s;">
+                    <i class="far fa-bookmark"></i> Saved
+                </button>
+                <div class="user-profile-dropdown">
+                    <div class="user-profile-toggle" title="Account menu">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar">
                     </div>
-                    <a href="#" class="user-dropdown-item" onclick="animateTransition('user-dashboard'); return false;">
-                        <i class="fa-solid fa-gauge"></i> Dashboard
-                    </a>
-                    <div class="user-dropdown-divider"></div>
-                    <a href="#" class="user-dropdown-item logout-btn">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </a>
+                    <div class="user-dropdown-menu">
+                        <div class="user-dropdown-header">
+                            <span class="user-dropdown-name">User</span>
+                        </div>
+                        <a href="#" class="user-dropdown-item" onclick="animateTransition('user-dashboard'); return false;">
+                            <i class="fa-solid fa-gauge"></i> Dashboard
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="#" class="user-dropdown-item logout-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -41,7 +47,7 @@
             <aside class="sidebar-filters">
                 <div class="filter-header">
                     <h2>Filters</h2>
-                    <button class="btn-text">Reset All</button>
+                    <button class="btn-text" id="reset-filters-btn">Reset All</button>
                 </div>
 
                 <div class="filter-section">
@@ -93,7 +99,7 @@
                     </label>
                 </div>
 
-                <button class="btn-primary w-100 apply-btn" style="margin-top: auto; margin-bottom: 20px;">Apply
+                <button class="btn-primary w-100 apply-btn" id="apply-filters-btn" style="margin-top: auto; margin-bottom: 20px;">Apply
                     Filters</button>
             </aside>
 
@@ -101,7 +107,7 @@
             <main class="content-area">
                 <div class="content-header">
                     <div class="discover-texts">
-                        <h1>Discover</h1>
+                        <h1 id="discover-title">Discover</h1>
                         <p>Showing articles based on your interests</p>
                     </div>
                     <div class="view-toggles">
@@ -110,7 +116,8 @@
                     </div>
                 </div>
 
-                <div class="active-filters" style="display: none;">
+                <!-- Active tags display area -->
+                <div class="active-filters" id="active-filters-bar" style="display: none;">
                     <span class="filter-label">ACTIVE:</span>
                     <div id="active-tags-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
                 </div>

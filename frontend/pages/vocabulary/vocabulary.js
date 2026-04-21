@@ -71,6 +71,7 @@ function attachVocabularyEvents() {
         'nav-vocab-quiz': 'quiz',
         'nav-vocab-dashboard': 'user-dashboard',
         'vocab-to-articles': 'articles',
+        'vocab-back-to-articles': 'articles',
     };
 
     Object.entries(navLinks).forEach(([id, view]) => {

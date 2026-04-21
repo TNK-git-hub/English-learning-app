@@ -52,7 +52,8 @@ CREATE TABLE articles (
     content TEXT, -- Nội dung
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Ngày tạo
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Ngày update
-    image_url VARCHAR(2083) -- Link ảnh
+    image_url VARCHAR(2083), -- Link ảnh
+    difficulty ENUM('Beginner', 'Intermediate', 'Advanced') DEFAULT 'Beginner'
 );
 
 -- =============================

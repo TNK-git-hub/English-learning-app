@@ -12,8 +12,11 @@ const AppState = {
     articlesPerPage: 6,
     currentFilter: 'all',
     viewMode: 'grid',          // 'grid' | 'list'
-    bookmarkedArticles: [],
+    bookmarkedArticles: JSON.parse(localStorage.getItem('learnup_bookmarks') || '[]'),
     vocabularyList: [],
+    showSavedOnly: false,      // Show only bookmarked articles
+    activeTagFilters: [],      // Currently selected tag filters
+    activeDifficultyFilter: null, // Currently selected difficulty filter
     
     // Quiz State
     currentQuiz: null,
