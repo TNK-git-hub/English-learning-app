@@ -17,6 +17,18 @@ class RegisterRequest(BaseModel):
     name: str
 
 
+# ===== Admin User Management =====
+class AdminCreateUserRequest(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str = "user"
+
+
+class UpdateRoleRequest(BaseModel):
+    role: str
+
+
 # ===== Auth Responses =====
 class UserResponse(BaseModel):
     userId: int
@@ -30,3 +42,4 @@ class TokenResponse(BaseModel):
     message: str = "Đăng nhập thành công"
     token: str
     user: UserResponse
+

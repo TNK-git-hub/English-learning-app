@@ -1,10 +1,10 @@
 """
-Users Router — API endpoints cho User (login, register, profile).
+Users Router — API endpoints cho User (login, register, profile, admin management).
 Thin layer — chỉ nhận request, gọi service, trả response.
 """
 from fastapi import APIRouter, Depends
 from config.database import get_db
-from schemas.user_schema import LoginRequest, RegisterRequest
+from schemas.user_schema import LoginRequest, RegisterRequest, AdminCreateUserRequest, UpdateRoleRequest
 from services import user_service
 from middleware.auth_middleware import get_current_user, require_admin
 from repositories import user_repository
@@ -40,3 +40,35 @@ def get_all_users(admin=Depends(require_admin), conn=Depends(get_db)):
             u["created_at"] = u["created_at"].isoformat()
     return {"success": True, "data": users, "total": len(users)}
 
+
+@router.post("/admin-create")
+def admin_create_user(
+    request: AdminCreateUserRequest,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Admin tạo user mới với role tuỳ chọn."""
+    return user_service.admin_create_user(
+        request.email, request.password, request.name, request.role, conn
+    )
+
+
+@router.delete("/{user_id}")
+def admin_delete_user(
+    user_id: int,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Admin xóa user theo ID (admin only)."""
+    return user_service.admin_delete_user(user_id, conn)
+
+
+@router.patch("/{user_id}/role")
+def admin_update_role(
+    user_id: int,
+    request: UpdateRoleRequest,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Admin cập nhật role của user."""
+    return user_service.admin_update_role(user_id, request.role, conn)

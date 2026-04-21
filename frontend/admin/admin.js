@@ -82,7 +82,6 @@ function adminSetSidebarName(nameId) {
 function initAdminArticles() {
     adminSetSidebarName('admin-sidebar-name');
     setupAdminSidebarNav({
-        'nav-admin-articles-home': 'articles',
         'nav-admin-articles': 'admin-articles',
         'nav-admin-categories': 'admin-categories',
         'nav-admin-users': 'admin-users',
@@ -236,17 +235,20 @@ function setupArticleModal() {
 
     const closeBtn = document.getElementById('article-modal-close');
     const cancelBtn = document.getElementById('article-modal-cancel');
-    if (closeBtn) closeBtn.addEventListener('click', () => adminHideModal('article-modal-overlay'));
-    if (cancelBtn) cancelBtn.addEventListener('click', () => adminHideModal('article-modal-overlay'));
+    if (closeBtn) closeBtn.addEventListener('click', () => { adminHideModal('article-modal-overlay'); resetImageUploadUI(); });
+    if (cancelBtn) cancelBtn.addEventListener('click', () => { adminHideModal('article-modal-overlay'); resetImageUploadUI(); });
 
     // Close on overlay click
     const overlay = document.getElementById('article-modal-overlay');
     if (overlay) overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) adminHideModal('article-modal-overlay');
+        if (e.target === overlay) { adminHideModal('article-modal-overlay'); resetImageUploadUI(); }
     });
 
     const saveBtn = document.getElementById('article-modal-save');
     if (saveBtn) saveBtn.addEventListener('click', saveArticle);
+
+    // Setup image tabs
+    setupImageTabs();
 
     // Load tags for the picker
     loadTagsForPicker();
@@ -258,6 +260,10 @@ async function openArticleModal(articleId) {
     const titleInput = document.getElementById('article-modal-title-input');
     const contentInput = document.getElementById('article-modal-content');
     const imageInput = document.getElementById('article-modal-image');
+    const difficultySelect = document.getElementById('article-modal-difficulty');
+
+    // Reset image upload UI to URL tab
+    resetImageUploadUI();
 
     // Refresh tags
     await loadTagsForPicker();
@@ -273,6 +279,7 @@ async function openArticleModal(articleId) {
             if (titleInput) titleInput.value = article.title || '';
             if (contentInput) contentInput.value = article.content || '';
             if (imageInput) imageInput.value = article.image_url || '';
+            if (difficultySelect) difficultySelect.value = article.difficulty || 'Beginner';
 
             // Map tag names → IDs
             const tagNames = Array.isArray(article.tags) ? article.tags : [];
@@ -291,6 +298,7 @@ async function openArticleModal(articleId) {
         if (titleInput) titleInput.value = '';
         if (contentInput) contentInput.value = '';
         if (imageInput) imageInput.value = '';
+        if (difficultySelect) difficultySelect.value = 'Beginner';
         renderTagPicker([]);
     }
 
@@ -303,6 +311,7 @@ async function saveArticle() {
     const title = document.getElementById('article-modal-title-input')?.value.trim();
     const content = document.getElementById('article-modal-content')?.value.trim();
     const image_url = document.getElementById('article-modal-image')?.value.trim();
+    const difficulty = document.getElementById('article-modal-difficulty')?.value || 'Beginner';
     const tag_ids = getSelectedTagIds();
     const saveBtn = document.getElementById('article-modal-save');
 
@@ -315,13 +324,13 @@ async function saveArticle() {
         if (id) {
             await apiFetch(`/api/articles/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify({ title, content, image_url, tag_ids }),
+                body: JSON.stringify({ title, content, image_url, difficulty, tag_ids }),
             });
             adminToast('Article updated successfully!');
         } else {
             await apiFetch('/api/articles', {
                 method: 'POST',
-                body: JSON.stringify({ title, content, image_url, tag_ids }),
+                body: JSON.stringify({ title, content, image_url, difficulty, tag_ids }),
             });
             adminToast('Article created successfully!');
         }
@@ -357,7 +366,6 @@ async function deleteArticle(articleId, title) {
 function initAdminCategories() {
     adminSetSidebarName('cat-sidebar-name');
     setupAdminSidebarNav({
-        'nav-admin-cats-home': 'articles',
         'nav-cat-articles': 'admin-articles',
         'nav-cat-categories': 'admin-categories',
         'nav-cat-users': 'admin-users',
@@ -558,7 +566,6 @@ async function deleteTag(tagId, name) {
 function initAdminUsers() {
     adminSetSidebarName('users-sidebar-name');
     setupAdminSidebarNav({
-        'nav-admin-users-home': 'articles',
         'nav-users-articles': 'admin-articles',
         'nav-users-categories': 'admin-categories',
         'nav-users-users': 'admin-users',
@@ -566,6 +573,7 @@ function initAdminUsers() {
 
     fetchAdminUsers();
     setupUsersSearch();
+    setupUserModal();
 }
 
 let _allAdminUsers = [];
@@ -574,7 +582,7 @@ async function fetchAdminUsers() {
     const tbody = document.getElementById('admin-users-tbody');
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Loading users...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Loading users...</td></tr>`;
 
     try {
         const data = await apiFetch('/api/users');
@@ -582,7 +590,7 @@ async function fetchAdminUsers() {
         renderAdminUsersTable(_allAdminUsers);
         updateUserStats(_allAdminUsers);
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#ef4444;padding:40px;">Failed to load users. Are you logged in as admin?</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#ef4444;padding:40px;">Failed to load users. Are you logged in as admin?</td></tr>`;
     }
 }
 
@@ -611,7 +619,7 @@ function renderAdminUsersTable(users) {
     if (!tbody) return;
 
     if (!users || users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:#64748b;">No users found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b;">No users found.</td></tr>`;
         if (showing) showing.textContent = 'No users found';
         return;
     }
@@ -643,8 +651,18 @@ function renderAdminUsersTable(users) {
                 </span>
             </td>
             <td style="color:#64748b;">${dateStr}</td>
+            <td>
+                <button class="action-icon text-red admin-delete-user-btn" data-id="${user.id}" data-name="${(user.name || '').replace(/"/g, '&quot;')}" title="Delete User">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
+    });
+
+    // Attach delete events
+    tbody.querySelectorAll('.admin-delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteUser(parseInt(btn.dataset.id), btn.dataset.name));
     });
 }
 
@@ -676,4 +694,227 @@ function setupAdminSidebarNav(linkMap) {
             });
         }
     });
+}
+
+// ─────────────────────────────────────────────
+// USER MODAL (Create)
+// ─────────────────────────────────────────────
+
+function setupUserModal() {
+    // Wire Add User button (may not exist if we're not on users page yet, so check repeatedly)
+    const wireAddBtn = () => {
+        const addBtn = document.getElementById('add-new-user-btn');
+        if (addBtn && !addBtn._wired) {
+            addBtn._wired = true;
+            addBtn.addEventListener('click', openUserModal);
+        }
+    };
+    wireAddBtn();
+    // Also try after short delay in case DOM isn't ready
+    setTimeout(wireAddBtn, 300);
+
+    const closeBtn = document.getElementById('user-modal-close');
+    const cancelBtn = document.getElementById('user-modal-cancel');
+    if (closeBtn) closeBtn.addEventListener('click', () => adminHideModal('user-modal-overlay'));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => adminHideModal('user-modal-overlay'));
+
+    const overlay = document.getElementById('user-modal-overlay');
+    if (overlay) overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) adminHideModal('user-modal-overlay');
+    });
+
+    const saveBtn = document.getElementById('user-modal-save');
+    if (saveBtn) saveBtn.addEventListener('click', saveUser);
+}
+
+function openUserModal() {
+    const nameInput = document.getElementById('user-modal-name');
+    const emailInput = document.getElementById('user-modal-email');
+    const passInput = document.getElementById('user-modal-password');
+    const roleSelect = document.getElementById('user-modal-role');
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    if (passInput) passInput.value = '';
+    if (roleSelect) roleSelect.value = 'user';
+    adminShowModal('user-modal-overlay');
+    if (nameInput) nameInput.focus();
+}
+
+async function saveUser() {
+    const name = document.getElementById('user-modal-name')?.value.trim();
+    const email = document.getElementById('user-modal-email')?.value.trim();
+    const password = document.getElementById('user-modal-password')?.value;
+    const role = document.getElementById('user-modal-role')?.value || 'user';
+    const saveBtn = document.getElementById('user-modal-save');
+
+    if (!name) { adminToast('Name is required', 'error'); return; }
+    if (!email) { adminToast('Email is required', 'error'); return; }
+    if (!password || password.length < 8) { adminToast('Password must be at least 8 characters', 'error'); return; }
+
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...'; }
+
+    try {
+        await apiFetch('/api/users/admin-create', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, password, role }),
+        });
+        adminToast(`User "${name}" created successfully!`);
+        adminHideModal('user-modal-overlay');
+        await fetchAdminUsers();
+    } catch (err) {
+        adminToast(err.message || 'Failed to create user', 'error');
+    } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Create User'; }
+    }
+}
+
+async function deleteUser(userId, name) {
+    const confirmed = await adminConfirm(
+        'Delete User',
+        `Are you sure you want to delete the account of "${name}"? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+        await apiFetch(`/api/users/${userId}`, { method: 'DELETE' });
+        adminToast('User deleted successfully.');
+        await fetchAdminUsers();
+    } catch (err) {
+        adminToast(err.message || 'Failed to delete user', 'error');
+    }
+}
+
+// ─────────────────────────────────────────────
+// IMAGE UPLOAD TABS
+// ─────────────────────────────────────────────
+
+function setupImageTabs() {
+    const urlBtn = document.getElementById('img-tab-url-btn');
+    const fileBtn = document.getElementById('img-tab-file-btn');
+    const urlDiv = document.getElementById('img-input-url');
+    const fileDiv = document.getElementById('img-input-file');
+    const dropZone = document.getElementById('img-drop-zone');
+    const fileInput = document.getElementById('article-modal-file');
+
+    if (!urlBtn || !fileBtn) return;
+
+    urlBtn.addEventListener('click', () => {
+        urlBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#eff6ff;color:#2563eb;transition:all .2s;';
+        fileBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#f8fafc;color:#64748b;transition:all .2s;';
+        if (urlDiv) urlDiv.style.display = '';
+        if (fileDiv) fileDiv.style.display = 'none';
+    });
+
+    fileBtn.addEventListener('click', () => {
+        fileBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#eff6ff;color:#2563eb;transition:all .2s;';
+        urlBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#f8fafc;color:#64748b;transition:all .2s;';
+        if (urlDiv) urlDiv.style.display = 'none';
+        if (fileDiv) fileDiv.style.display = '';
+    });
+
+    // Drop zone click → trigger file input
+    if (dropZone) dropZone.addEventListener('click', () => fileInput && fileInput.click());
+
+    // Drag & drop styling
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#2563eb'; dropZone.style.background = '#eff6ff'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#cbd5e1'; dropZone.style.background = ''; });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#cbd5e1';
+            dropZone.style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (file) handleFileUpload(file);
+        });
+    }
+
+    if (fileInput) fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file);
+    });
+}
+
+function resetImageUploadUI() {
+    const urlBtn = document.getElementById('img-tab-url-btn');
+    const fileBtn = document.getElementById('img-tab-file-btn');
+    const urlDiv = document.getElementById('img-input-url');
+    const fileDiv = document.getElementById('img-input-file');
+    const progress = document.getElementById('img-upload-progress');
+    const preview = document.getElementById('img-preview');
+    const fileInput = document.getElementById('article-modal-file');
+
+    if (urlBtn) urlBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#eff6ff;color:#2563eb;transition:all .2s;';
+    if (fileBtn) fileBtn.style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#f8fafc;color:#64748b;transition:all .2s;';
+    if (urlDiv) urlDiv.style.display = '';
+    if (fileDiv) fileDiv.style.display = 'none';
+    if (progress) progress.style.display = 'none';
+    if (preview) preview.style.display = 'none';
+    if (fileInput) fileInput.value = '';
+}
+
+async function handleFileUpload(file) {
+    const progress = document.getElementById('img-upload-progress');
+    const bar = document.getElementById('img-progress-bar');
+    const status = document.getElementById('img-upload-status');
+    const preview = document.getElementById('img-preview');
+    const previewImg = document.getElementById('img-preview-img');
+    const previewName = document.getElementById('img-preview-name');
+    const imageInput = document.getElementById('article-modal-image');
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        adminToast('File too large. Max 10 MB.', 'error');
+        return;
+    }
+
+    // Show progress
+    if (progress) progress.style.display = '';
+    if (preview) preview.style.display = 'none';
+    if (bar) bar.style.width = '30%';
+    if (status) status.textContent = `Uploading ${file.name}...`;
+
+    try {
+        const token = localStorage.getItem('token') || '';
+        const formData = new FormData();
+        formData.append('file', file);
+
+        if (bar) bar.style.width = '60%';
+
+        const resp = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+        });
+        const result = await resp.json();
+
+        if (!resp.ok || !result.success) {
+            throw new Error(result.detail || result.message || 'Upload failed');
+        }
+
+        if (bar) bar.style.width = '100%';
+        if (status) status.textContent = 'Upload complete!';
+
+        // Set the image URL field
+        if (imageInput) imageInput.value = result.url;
+
+        // Show preview
+        setTimeout(() => {
+            if (progress) progress.style.display = 'none';
+            if (preview) preview.style.display = '';
+            if (previewImg) {
+                if (file.type.startsWith('image/')) {
+                    previewImg.src = result.url;
+                    previewImg.style.display = '';
+                } else {
+                    previewImg.style.display = 'none';
+                }
+            }
+            if (previewName) previewName.textContent = `✅ ${file.name} uploaded successfully`;
+        }, 400);
+
+        adminToast(`File "${file.name}" uploaded!`);
+    } catch (err) {
+        if (progress) progress.style.display = 'none';
+        adminToast(err.message || 'Upload failed', 'error');
+    }
 }

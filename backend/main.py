@@ -2,10 +2,11 @@
 LearnUP API — FastAPI Application Entry Point.
 Chỉ khởi tạo app, mount middleware & routers.
 """
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import articles, users, tags, vocabulary
+from routers import articles, users, tags, vocabulary, upload
 from config.settings import APP_HOST, APP_PORT
 
 app = FastAPI(
@@ -24,11 +25,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ===== Serve uploaded files =====
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 # ===== Mount Routers =====
 app.include_router(users.router)
 app.include_router(articles.router)
 app.include_router(tags.router)
 app.include_router(vocabulary.router)
+app.include_router(upload.router)
 
 
 # ===== Health Check =====

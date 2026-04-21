@@ -85,3 +85,51 @@ def get_profile(user_id: int, conn):
         "name": user["name"],
         "role": user["role"],
     }
+
+
+def admin_create_user(email: str, password: str, name: str, role: str, conn):
+    """Admin tạo user mới với role tùy chọn."""
+    if len(password) < 8:
+        raise BadRequestException("Password must be at least 8 characters long.")
+    if not name or len(name.strip()) < 2:
+        raise BadRequestException("Name must be at least 2 characters long.")
+    if role not in ("user", "admin"):
+        raise BadRequestException("Role must be 'user' or 'admin'.")
+
+    existing = user_repository.find_by_email(conn, email)
+    if existing:
+        raise ConflictException("Email already registered.")
+
+    hashed = hash_password(password)
+    user_id = user_repository.create(conn, email, hashed, name.strip(), role)
+
+    return {
+        "success": True,
+        "message": "User created successfully",
+        "data": {
+            "userId": user_id,
+            "email": email,
+            "name": name.strip(),
+            "role": role,
+        }
+    }
+
+
+def admin_delete_user(user_id: int, conn):
+    """Admin xóa user theo ID."""
+    from utils.exceptions import NotFoundException
+    deleted = user_repository.delete(conn, user_id)
+    if not deleted:
+        raise NotFoundException("User not found.")
+    return {"success": True, "message": "User deleted successfully"}
+
+
+def admin_update_role(user_id: int, role: str, conn):
+    """Admin cập nhật role của user."""
+    if role not in ("user", "admin"):
+        raise BadRequestException("Role must be 'user' or 'admin'.")
+    updated = user_repository.update_role(conn, user_id, role)
+    if not updated:
+        from utils.exceptions import NotFoundException
+        raise NotFoundException("User not found.")
+    return {"success": True, "message": f"Role updated to '{role}'"}

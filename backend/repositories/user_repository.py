@@ -50,3 +50,25 @@ def find_all(conn) -> list:
         return cursor.fetchall()
     finally:
         cursor.close()
+
+
+def delete(conn, user_id: int) -> bool:
+    """Xóa user theo ID. Trả về True nếu xóa được."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        cursor.close()
+
+
+def update_role(conn, user_id: int, role: str) -> bool:
+    """Cập nhật role của user. Trả về True nếu thành công."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE users SET role = %s WHERE id = %s", (role, user_id))
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        cursor.close()
