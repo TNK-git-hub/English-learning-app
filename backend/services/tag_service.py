@@ -23,3 +23,17 @@ def delete_tag(tag_id: int, conn):
     if not deleted:
         raise NotFoundException(f"Tag with id '{tag_id}' not found")
     return {"success": True, "message": "Tag deleted"}
+
+
+def update_tag(tag_id: int, name: str, conn):
+    """Đổi tên tag."""
+    existing = tag_repository.find_by_id(conn, tag_id)
+    if not existing:
+        raise NotFoundException(f"Tag with id '{tag_id}' not found")
+    name = name.strip()
+    if not name:
+        from utils.exceptions import BadRequestException
+        raise BadRequestException("Tag name cannot be empty")
+    updated = tag_repository.update(conn, tag_id, name)
+    return {"success": True, "message": "Tag updated"}
+

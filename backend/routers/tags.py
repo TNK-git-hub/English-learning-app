@@ -3,7 +3,7 @@ Tags Router — API endpoints cho Tags.
 """
 from fastapi import APIRouter, Depends
 from config.database import get_db
-from schemas.tag_schema import TagCreateRequest
+from schemas.tag_schema import TagCreateRequest, TagUpdateRequest
 from services import tag_service
 from middleware.auth_middleware import require_admin
 
@@ -28,6 +28,17 @@ def create_tag(
     return tag_service.create_tag(request.name, conn)
 
 
+@router.put("/{tag_id}")
+def update_tag(
+    tag_id: int,
+    request: TagUpdateRequest,
+    admin=Depends(require_admin),
+    conn=Depends(get_db)
+):
+    """Đổi tên tag (admin only)."""
+    return tag_service.update_tag(tag_id, request.name, conn)
+
+
 @router.delete("/{tag_id}")
 def delete_tag(
     tag_id: int,
@@ -36,3 +47,4 @@ def delete_tag(
 ):
     """Xóa tag (admin only)."""
     return tag_service.delete_tag(tag_id, conn)
+
