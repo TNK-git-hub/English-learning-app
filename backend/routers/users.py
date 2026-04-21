@@ -24,6 +24,13 @@ def register(request: RegisterRequest, conn=Depends(get_db)):
     return user_service.register(request.email, request.password, request.name, conn)
 
 
+@router.get("/dashboard")
+def get_dashboard(current_user=Depends(get_current_user), conn=Depends(get_db)):
+    """Lấy thống kê dashboard của user hiện tại (vocabulary, quiz, recent articles)."""
+    stats = user_repository.get_dashboard_stats(conn, current_user["sub"])
+    return {"success": True, "data": stats}
+
+
 @router.get("/profile")
 def get_profile(current_user=Depends(get_current_user), conn=Depends(get_db)):
     """Lấy thông tin user hiện tại (protected)."""
