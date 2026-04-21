@@ -33,7 +33,8 @@ def create_article(
 ):
     """Tạo bài viết mới (admin only)."""
     return article_service.create_article(
-        request.title, request.content, request.image_url, request.tag_ids, conn
+        request.title, request.content, request.image_url,
+        request.difficulty, request.tag_ids, conn
     )
 
 
@@ -46,7 +47,8 @@ def update_article(
 ):
     """Cập nhật bài viết (admin only)."""
     return article_service.update_article(
-        article_id, request.title, request.content, request.image_url, request.tag_ids, conn
+        article_id, request.title, request.content, request.image_url,
+        request.difficulty, request.tag_ids, conn
     )
 
 

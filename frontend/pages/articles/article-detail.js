@@ -1,58 +1,54 @@
 /**
  * Article Detail Page — Render nội dung bài viết, lookup từ, popup
- * Redesigned: wider layout with sidebar, back nav, reading stats
+ * Hover-based popup với nghĩa Tiếng Việt (MyMemory API)
  */
 
-/**
- * Render chi tiết bài viết
- */
+// ─── State ───────────────────────────────────────────────────────────────────
+let _currentPopupWord = null;
+let _currentPopupPhonetic = null;
+let _currentPopupDefinition = null;
+let _currentPopupExample = null;
+let _currentPopupVietnamese = null;
+let _lastMouseX = 0;   // track vị trí chuột thực tế
+let _lastMouseY = 0;
+let _popupAudioUrl = null;
+let _popupHideTimer = null;      // debounce timer để tránh nhấp nháy khi di chuột
+let _currentHoveredWord = null;  // từ đang hover, tránh gọi API trùng lặp
+
+// ─── Render article ──────────────────────────────────────────────────────────
 function renderArticleDetail() {
     const article = AppState.selectedArticle;
     if (!article) return;
 
-    const titleEl = document.getElementById('detail-article-title');
-    const bodyEl = document.getElementById('detail-article-body');
-    const headerTitle = document.getElementById('detail-header-title');
+    const titleEl     = document.getElementById('detail-article-title');
     const categoryTag = document.getElementById('detail-category-tag');
-    const difficultyEl = document.getElementById('detail-difficulty');
-    const readTimeEl = document.getElementById('detail-read-time');
+    const difficultyEl= document.getElementById('detail-difficulty');
+    const readTimeEl  = document.getElementById('detail-read-time');
 
-    // Title
     if (titleEl) titleEl.textContent = article.title || 'Untitled';
-    if (headerTitle) headerTitle.textContent = article.title || 'Untitled';
 
-    // Category tag
-    const tags = Array.isArray(article.tags) ? article.tags : (article.tags ? article.tags.split(',').map(t => t.trim()) : []);
-    if (categoryTag) {
-        categoryTag.textContent = tags.length > 0 ? tags[0] : 'General';
-    }
+    const tags = Array.isArray(article.tags)
+        ? article.tags
+        : (article.tags ? article.tags.split(',').map(t => t.trim()) : []);
+    if (categoryTag) categoryTag.textContent = tags.length > 0 ? tags[0] : 'General';
 
-    // Difficulty
     if (difficultyEl) {
-        const difficulty = article.difficulty || 'Beginner';
-        difficultyEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+        const d = article.difficulty || 'Beginner';
+        difficultyEl.textContent = d.charAt(0).toUpperCase() + d.slice(1);
     }
 
-    // Read time estimate (roughly 200 words per minute)
     if (readTimeEl && article.content) {
         const wordCount = article.content.split(/\s+/).length;
         const minutes = Math.max(1, Math.ceil(wordCount / 200));
         readTimeEl.textContent = `${minutes} min read`;
-
-        // Update words read stats
         const wordsReadEl = document.getElementById('detail-words-read');
         if (wordsReadEl) wordsReadEl.textContent = `0 / ${wordCount.toLocaleString()}`;
     }
 
-    // Hero image
     const heroEl = document.getElementById('detail-article-image');
     if (heroEl) {
         const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=1200&q=80';
-        heroEl.style.cssText += `background-image: none;`;
         heroEl.innerHTML = '';
-        // Override the ::after pseudo-element
-        heroEl.style.setProperty('--hero-bg', `url('${imageUrl}')`);
-        // Just set a background directly
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = article.title || '';
@@ -61,23 +57,18 @@ function renderArticleDetail() {
         heroEl.appendChild(img);
     }
 
-    // Content body with word lookup
+    const bodyEl = document.getElementById('detail-article-body');
     if (bodyEl && article.content) {
-        const processedContent = processTextForLookup(article.content);
-        bodyEl.innerHTML = processedContent;
+        bodyEl.innerHTML = processTextForLookup(article.content);
     }
 
-    // Keywords sidebar
     const keywordsEl = document.getElementById('detail-keywords');
     if (keywordsEl) {
-        if (tags.length > 0) {
-            keywordsEl.innerHTML = tags.map(t => `<span class="keyword-chip">${escapeHtml(t)}</span>`).join('');
-        } else {
-            keywordsEl.innerHTML = '<span class="keyword-chip">General</span>';
-        }
+        keywordsEl.innerHTML = tags.length > 0
+            ? tags.map(t => `<span class="keyword-chip">${escapeHtml(t)}</span>`).join('')
+            : '<span class="keyword-chip">General</span>';
     }
 
-    // Bookmark state
     const bookmarkBtn = document.getElementById('detail-bookmark-btn');
     if (bookmarkBtn) {
         const isBookmarked = AppState.bookmarkedArticles.includes(article.id);
@@ -91,35 +82,25 @@ function renderArticleDetail() {
         }
     }
 
-    // Track reading progress on scroll
     setupReadingProgress();
 }
 
-/**
- * Setup reading progress tracking
- */
+// ─── Reading progress ─────────────────────────────────────────────────────────
 function setupReadingProgress() {
-    const bodyEl = document.getElementById('detail-article-body');
-    const progressEl = document.getElementById('detail-progress');
+    const bodyEl      = document.getElementById('detail-article-body');
+    const progressEl  = document.getElementById('detail-progress');
     const wordsReadEl = document.getElementById('detail-words-read');
     if (!bodyEl || !progressEl) return;
 
-    const article = AppState.selectedArticle;
+    const article    = AppState.selectedArticle;
     const totalWords = article && article.content ? article.content.split(/\s+/).length : 0;
 
-    const observer = new IntersectionObserver((entries) => {
-        // Simple progress: % of body scrolled into view
-    }, { threshold: Array.from({ length: 20 }, (_, i) => i * 0.05) });
-
-    // Use scroll event on nearest scrollable parent
-    const scrollParent = bodyEl.closest('.detail-page-body') || window;
     const handleScroll = () => {
-        const rect = bodyEl.getBoundingClientRect();
-        const totalHeight = bodyEl.scrollHeight;
-        const viewportH = window.innerHeight;
-        const scrolled = Math.max(0, -rect.top + viewportH * 0.3);
-        const pct = Math.min(100, Math.round((scrolled / totalHeight) * 100));
-        
+        const rect       = bodyEl.getBoundingClientRect();
+        const totalHeight= bodyEl.scrollHeight;
+        const viewportH  = window.innerHeight;
+        const scrolled   = Math.max(0, -rect.top + viewportH * 0.3);
+        const pct        = Math.min(100, Math.round((scrolled / totalHeight) * 100));
         progressEl.textContent = `${pct}%`;
         if (wordsReadEl) {
             const wordsRead = Math.round((pct / 100) * totalWords);
@@ -128,27 +109,16 @@ function setupReadingProgress() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial call
+    handleScroll();
 }
 
-/**
- * Process text to make each word clickable for lookup
- * @param {string} text - Raw article content
- * @returns {string} HTML with clickable words
- */
+// ─── Process text → clickable words ──────────────────────────────────────────
 function processTextForLookup(text) {
     if (!text) return '';
-    
-    // Split into paragraphs
-    const paragraphs = text.split(/\n+/);
-    return paragraphs.map(p => {
+    return text.split(/\n+/).map(p => {
         if (!p.trim()) return '';
-        // Wrap each word in a span for clicking
-        const words = p.split(/(\s+)/);
-        const processed = words.map(word => {
-            // Skip whitespace
+        const processed = p.split(/(\s+)/).map(word => {
             if (/^\s+$/.test(word)) return word;
-            // Skip punctuation-only
             const cleanWord = word.replace(/[^a-zA-Z]/g, '');
             if (!cleanWord) return word;
             return `<span class="lookup-word" data-word="${cleanWord}">${word}</span>`;
@@ -157,14 +127,49 @@ function processTextForLookup(text) {
     }).join('');
 }
 
-/**
- * Attach events cho article detail page
- */
+// ─── Position popup below the hovered element ────────────────────────────────
+function positionPopupNearElement(el) {
+    const popup = document.getElementById('vocab-popup');
+    if (!popup) return;
+
+    // Make visible temporarily to measure height
+    popup.style.visibility = 'hidden';
+    popup.style.display = 'block';
+
+    const rect    = el.getBoundingClientRect();
+    const popupW  = popup.offsetWidth  || 330;
+    const popupH  = popup.offsetHeight || 320;
+    const margin  = 10;
+
+    let top  = rect.bottom + margin;
+    let left = rect.left;
+
+    // Prevent right overflow
+    if (left + popupW > window.innerWidth - 16) left = window.innerWidth - popupW - 16;
+    // Prevent left overflow
+    if (left < 8) left = 8;
+    // If not enough room below, show above
+    if (rect.bottom + margin + popupH > window.innerHeight) {
+        top = rect.top - popupH - margin;
+    }
+    if (top < 8) top = 8;
+
+    popup.style.top        = `${top}px`;
+    popup.style.left       = `${left}px`;
+    popup.style.visibility = 'visible';
+}
+
+// ─── Attach events ────────────────────────────────────────────────────────────
 function attachArticleDetailEvents() {
-    // Render article content
     renderArticleDetail();
 
-    // Back to articles
+    // Track mouse position globally — used by scheduleHidePopup
+    document.addEventListener('mousemove', (e) => {
+        _lastMouseX = e.clientX;
+        _lastMouseY = e.clientY;
+    });
+
+    // Back button
     const backBtn = document.getElementById('detail-back-btn');
     if (backBtn) {
         backBtn.addEventListener('click', () => animateTransition('articles'));
@@ -176,7 +181,7 @@ function attachArticleDetailEvents() {
         logoBtn.addEventListener('click', () => animateTransition('articles'));
     }
 
-    // Bookmark toggle in header
+    // Bookmark toggle
     const bookmarkBtn = document.getElementById('detail-bookmark-btn');
     if (bookmarkBtn && AppState.selectedArticle) {
         bookmarkBtn.addEventListener('click', (e) => {
@@ -184,7 +189,6 @@ function attachArticleDetailEvents() {
             const articleId = AppState.selectedArticle.id;
             const index = AppState.bookmarkedArticles.indexOf(articleId);
             const icon = bookmarkBtn.querySelector('i');
-
             if (index > -1) {
                 AppState.bookmarkedArticles.splice(index, 1);
                 bookmarkBtn.classList.remove('active');
@@ -194,83 +198,258 @@ function attachArticleDetailEvents() {
                 bookmarkBtn.classList.add('active');
                 if (icon) icon.className = 'fas fa-bookmark';
             }
-            // Persist bookmarks
             localStorage.setItem('learnup_bookmarks', JSON.stringify(AppState.bookmarkedArticles));
         });
     }
 
-    // Take quiz button
+    // Take quiz
     const quizBtn = document.getElementById('detail-take-quiz-btn');
     if (quizBtn) {
         quizBtn.addEventListener('click', () => animateTransition('quiz'));
     }
 
-    // Word lookup on click
+    // ── HOVER-BASED word lookup ────────────────────────────────────────────────
     document.querySelectorAll('.lookup-word').forEach(wordEl => {
-        wordEl.addEventListener('click', (e) => {
-            e.stopPropagation();
+        wordEl.addEventListener('mouseenter', () => {
             const word = wordEl.dataset.word;
-            if (word) {
-                lookupWord(word);
+            if (!word) return;
+
+            // Cancel any pending hide
+            if (_popupHideTimer) { clearTimeout(_popupHideTimer); _popupHideTimer = null; }
+
+            // Position first (so popup appears immediately)
+            positionPopupNearElement(wordEl);
+
+            // Only re-fetch if different word
+            if (word !== _currentHoveredWord) {
+                _currentHoveredWord = word;
+                lookupWord(word, wordEl);
             }
         });
+
+        // On mouseleave from a WORD: schedule a hide check
+        // — NOT an instant hide, because mouse may be moving toward popup
+        wordEl.addEventListener('mouseleave', () => scheduleHidePopup(250));
     });
 
-    // Close popup on click outside
-    document.addEventListener('click', (e) => {
-        const popup = document.getElementById('vocab-popup');
-        if (popup && !popup.contains(e.target) && !e.target.classList.contains('lookup-word')) {
-            popup.classList.remove('show');
-        }
-    });
+    // Keep popup alive when mouse is inside it
+    const popup = document.getElementById('vocab-popup');
+    if (popup) {
+        popup.addEventListener('mouseenter', () => {
+            if (_popupHideTimer) { clearTimeout(_popupHideTimer); _popupHideTimer = null; }
+        });
+        popup.addEventListener('mouseleave', () => scheduleHidePopup(250));
+    }
+
+    // Save to Dictionary button
+    const saveBtn = document.getElementById('add-to-vocab-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => saveCurrentWordToDictionary());
+    }
 }
 
-/**
- * Lookup word using Dictionary API
- * @param {string} word
- */
-async function lookupWord(word) {
+// ─── scheduleHidePopup: xác nhận qua elementFromPoint trước khi đóng ──────────
+// Tránh false-positive do mouseleave fires khi popup xuất hiện che từ.
+function scheduleHidePopup(delay = 250) {
+    if (_popupHideTimer) clearTimeout(_popupHideTimer);
+    _popupHideTimer = setTimeout(() => {
+        _popupHideTimer = null;
+
+        const popup  = document.getElementById('vocab-popup');
+        if (!popup || popup.style.display === 'none') return;
+
+        // Lấy element thực sự dưới con trỏ chuột hiện tại
+        const hovered = document.elementFromPoint(_lastMouseX, _lastMouseY);
+
+        const overPopup = popup.contains(hovered);
+        const overWord  = hovered && hovered.classList && hovered.classList.contains('lookup-word');
+
+        if (overPopup || overWord) {
+            // Chuột vẫn đang ở trên popup hoặc từ → KHÔNG đóng
+            if (overWord && hovered.dataset.word && hovered.dataset.word !== _currentHoveredWord) {
+                // Sang từ mới → fetch từ mới
+                _currentHoveredWord = hovered.dataset.word;
+                lookupWord(hovered.dataset.word, hovered);
+            }
+            return;
+        }
+
+        // Chuột đã ra ngoài cả hai → đóng popup
+        closeVocabPopup();
+        _currentHoveredWord = null;
+    }, delay);
+}
+
+function closeVocabPopup() {
     const popup = document.getElementById('vocab-popup');
-    const wordEl = document.getElementById('popup-word');
-    const phoneticEl = document.getElementById('popup-phonetic');
-    const definitionEl = document.getElementById('popup-definition');
-    const exampleEl = document.getElementById('popup-example');
+    if (popup) popup.style.display = 'none';
+}
+
+// ─── Lookup word: English dictionary + Vietnamese translation ─────────────────
+async function lookupWord(word, sourceEl) {
+    const popup         = document.getElementById('vocab-popup');
+    const wordEl        = document.getElementById('popup-word');
+    const phoneticEl    = document.getElementById('popup-phonetic');
+    const definitionEl  = document.getElementById('popup-definition');
+    const exampleEl     = document.getElementById('popup-example');
+    const vietnameseEl  = document.getElementById('popup-vietnamese');
+    const saveBtn       = document.getElementById('add-to-vocab-btn');
 
     if (!popup) return;
 
-    // Show popup with loading state
-    if (wordEl) wordEl.textContent = word;
-    if (phoneticEl) phoneticEl.textContent = 'Loading...';
-    if (definitionEl) definitionEl.textContent = 'Looking up...';
-    if (exampleEl) exampleEl.textContent = '';
-    popup.classList.add('show');
+    // Reset state
+    _currentPopupWord       = word;
+    _currentPopupPhonetic   = null;
+    _currentPopupDefinition = null;
+    _currentPopupExample    = null;
+    _currentPopupVietnamese = null;
+    _popupAudioUrl          = null;
+
+    if (wordEl)       wordEl.textContent = word;
+    if (phoneticEl)   phoneticEl.textContent = '…';
+    if (definitionEl) definitionEl.textContent = 'Looking up…';
+    if (exampleEl)    exampleEl.textContent = '';
+    if (vietnameseEl) vietnameseEl.textContent = 'Đang dịch…';
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.style.background = '';
+        saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+    }
+
+    // Show popup positioned at the hovered word
+    if (sourceEl) positionPopupNearElement(sourceEl);
+
+    // ── Fetch English definition ───────────────────────────────────────────────
+    const dictPromise = fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null);
+
+    // ── Fetch Vietnamese translation (MyMemory free API) ─────────────────────
+    const viPromise = fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|vi`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null);
+
+    // Run both in parallel
+    const [dictData, viData] = await Promise.all([dictPromise, viPromise]);
+
+    // Guard: user may have moved away before responses arrived
+    if (_currentHoveredWord !== word) return;
+
+    // ── Fill English data ─────────────────────────────────────────────────────
+    if (dictData && Array.isArray(dictData) && dictData.length > 0) {
+        const entry      = dictData[0];
+        const phonetic   = entry.phonetics?.find(p => p.text)?.text || '';
+        const meaning    = entry.meanings?.[0];
+        const definition = meaning?.definitions?.[0]?.definition || 'No definition found.';
+        const example    = meaning?.definitions?.[0]?.example || '';
+
+        _currentPopupPhonetic   = phonetic;
+        _currentPopupDefinition = definition;
+        _currentPopupExample    = example;
+
+        if (phoneticEl)   phoneticEl.textContent = phonetic || '';
+        if (definitionEl) definitionEl.textContent = definition;
+        if (exampleEl)    exampleEl.textContent = example ? `"${example}"` : '';
+
+        _popupAudioUrl = entry.phonetics?.find(p => p.audio)?.audio || null;
+        const audioBtn = document.getElementById('popup-audio-btn');
+        if (audioBtn) {
+            audioBtn.style.opacity = _popupAudioUrl ? '1' : '0.35';
+            audioBtn.onclick = _popupAudioUrl
+                ? () => new Audio(_popupAudioUrl).play().catch(() => {})
+                : null;
+        }
+    } else {
+        if (phoneticEl)   phoneticEl.textContent = '';
+        if (definitionEl) definitionEl.textContent = 'Không tìm thấy trong từ điển.';
+        if (exampleEl)    exampleEl.textContent = '';
+    }
+
+    // ── Fill Vietnamese data ──────────────────────────────────────────────────
+    if (viData && viData.responseStatus === 200) {
+        const viText = viData.responseData?.translatedText || '';
+        _currentPopupVietnamese = viText;
+        if (vietnameseEl) vietnameseEl.textContent = viText || '(không có)';
+    } else {
+        if (vietnameseEl) vietnameseEl.textContent = '(không dịch được)';
+    }
+
+    // Re-position after content loaded (height may have changed)
+    if (sourceEl && _currentHoveredWord === word) positionPopupNearElement(sourceEl);
+}
+
+// ─── Save word to DB ──────────────────────────────────────────────────────────
+async function saveCurrentWordToDictionary() {
+    if (!_currentPopupWord) return;
+
+    const saveBtn = document.getElementById('add-to-vocab-btn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+    }
+
+    const articleId = AppState.selectedArticle?.id || null;
 
     try {
-        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-        if (response.ok) {
-            const data = await response.json();
-            const entry = data[0];
-            const phonetic = entry.phonetics?.find(p => p.text)?.text || '';
-            const meaning = entry.meanings?.[0];
-            const definition = meaning?.definitions?.[0]?.definition || 'No definition found';
-            const example = meaning?.definitions?.[0]?.example || 'No example available';
+        await apiFetch('/api/vocabulary', {
+            method: 'POST',
+            body: JSON.stringify({
+                word:       _currentPopupWord,
+                article_id: articleId,
+                phonetic:   _currentPopupPhonetic   || '',
+                definition: _currentPopupDefinition || '',
+                example:    _currentPopupExample    || '',
+            }),
+        });
 
-            if (phoneticEl) phoneticEl.textContent = phonetic;
-            if (definitionEl) definitionEl.textContent = definition;
-            if (exampleEl) exampleEl.textContent = `"${example}"`;
-
-            // Audio playback
-            const audioUrl = entry.phonetics?.find(p => p.audio)?.audio;
-            const audioBtn = popup.querySelector('.btn-audio');
-            if (audioBtn && audioUrl) {
-                audioBtn.onclick = () => new Audio(audioUrl).play();
-            }
-        } else {
-            if (phoneticEl) phoneticEl.textContent = '';
-            if (definitionEl) definitionEl.textContent = 'Word not found in dictionary.';
-            if (exampleEl) exampleEl.textContent = '';
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+            saveBtn.style.background = '#22c55e';
         }
-    } catch (error) {
-        if (definitionEl) definitionEl.textContent = 'Error looking up word.';
+        showToast(`"${_currentPopupWord}" đã lưu vào từ điển!`, 'success');
+        setTimeout(() => closeVocabPopup(), 1500);
+
+    } catch (err) {
+        const alreadySaved = err.message && err.message.toLowerCase().includes('already');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.style.background = alreadySaved ? '#94a3b8' : '';
+            saveBtn.innerHTML = alreadySaved
+                ? '<i class="fa-solid fa-bookmark"></i> Đã lưu rồi'
+                : '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+        }
+        showToast(
+            alreadySaved
+                ? `"${_currentPopupWord}" đã có trong từ điển của bạn.`
+                : (err.message || 'Lưu thất bại'),
+            alreadySaved ? 'info' : 'error'
+        );
     }
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const existing = document.getElementById('article-toast');
+    if (existing) existing.remove();
+
+    const colors = { success: '#22c55e', error: '#ef4444', info: '#64748b' };
+    const icons  = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-info-circle' };
+
+    const toast = document.createElement('div');
+    toast.id = 'article-toast';
+    toast.style.cssText = `
+        position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+        background:${colors[type]};color:#fff;
+        padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600;
+        z-index:99999;display:flex;align-items:center;gap:8px;
+        box-shadow:0 4px 24px rgba(0,0,0,.18);
+        animation:toastIn .25s ease;
+    `;
+    toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity .3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
 }

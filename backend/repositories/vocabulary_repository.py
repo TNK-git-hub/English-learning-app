@@ -10,7 +10,8 @@ def find_by_user(conn, user_id: int) -> List[Dict]:
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
-            SELECT v.id, v.word, v.article_id, v.created_at,
+            SELECT v.id, v.word, v.phonetic, v.definition, v.example,
+                   v.article_id, v.created_at,
                    a.title AS article_title
             FROM vocabularies v
             LEFT JOIN articles a ON v.article_id = a.id
@@ -32,14 +33,16 @@ def find_by_id(conn, vocab_id: str) -> Optional[Dict]:
         cursor.close()
 
 
-def create(conn, user_id: int, word: str, article_id: str = None) -> str:
+def create(conn, user_id: int, word: str, article_id: str = None,
+           phonetic: str = None, definition: str = None, example: str = None) -> str:
     """Lưu từ vựng mới, trả về ID (UUID)."""
     cursor = conn.cursor()
     try:
         vocab_id = str(uuid.uuid4())
         cursor.execute(
-            "INSERT INTO vocabularies (id, user_id, word, article_id) VALUES (%s, %s, %s, %s)",
-            (vocab_id, user_id, word, article_id)
+            """INSERT INTO vocabularies (id, user_id, word, article_id, phonetic, definition, example)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (vocab_id, user_id, word, article_id, phonetic, definition, example)
         )
         conn.commit()
         return vocab_id
@@ -66,7 +69,7 @@ def check_duplicate(conn, user_id: int, word: str) -> bool:
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "SELECT COUNT(*) FROM vocabularies WHERE user_id = %s AND word = %s",
+            "SELECT COUNT(*) FROM vocabularies WHERE user_id = %s AND LOWER(word) = LOWER(%s)",
             (user_id, word)
         )
         count = cursor.fetchone()[0]

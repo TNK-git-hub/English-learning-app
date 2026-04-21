@@ -14,6 +14,9 @@ def get_all(conn):
         article["tags"] = article["tags"].split(",") if article.get("tags") else []
         if article.get("created_at"):
             article["created_at"] = article["created_at"].isoformat()
+        # Đảm bảo difficulty luôn có giá trị
+        if not article.get("difficulty"):
+            article["difficulty"] = "Beginner"
 
     return {"success": True, "data": articles, "total": len(articles)}
 
@@ -28,8 +31,11 @@ def get_by_id(article_id: str, conn):
     article["tags"] = article["tags"].split(",") if article.get("tags") else []
     if article.get("created_at"):
         article["created_at"] = article["created_at"].isoformat()
+    if not article.get("difficulty"):
+        article["difficulty"] = "Beginner"
 
     return {"success": True, "data": article}
+
 
 
 def create_article(title: str, content: str, image_url: str, difficulty: str, tag_ids: list, conn):

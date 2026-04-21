@@ -16,14 +16,23 @@ def get_user_vocab(user_id: int, conn):
     return {"success": True, "data": vocabs, "total": len(vocabs)}
 
 
-def save_word(user_id: int, word: str, article_id: str, conn):
-    """Lưu từ vựng mới cho user."""
-    # Kiểm tra duplicate
-    if vocabulary_repository.check_duplicate(conn, user_id, word):
-        raise ConflictException(f"Word '{word}' already saved.")
+def save_word(user_id: int, word: str, article_id: str, conn,
+              phonetic: str = None, definition: str = None, example: str = None):
+    """Lưu từ vựng mới cho user (bao gồm phonetic, definition, example)."""
+    if not word or not word.strip():
+        raise ValueError("Word cannot be empty.")
 
-    vocab_id = vocabulary_repository.create(conn, user_id, word, article_id)
-    return {"success": True, "message": "Word saved", "id": vocab_id}
+    word = word.strip().lower()
+
+    # Kiểm tra duplicate (case-insensitive)
+    if vocabulary_repository.check_duplicate(conn, user_id, word):
+        raise ConflictException(f"Word '{word}' already saved in your dictionary.")
+
+    vocab_id = vocabulary_repository.create(
+        conn, user_id, word, article_id,
+        phonetic=phonetic, definition=definition, example=example
+    )
+    return {"success": True, "message": f"'{word}' saved to your dictionary.", "id": vocab_id}
 
 
 def delete_word(vocab_id: str, user_id: int, conn):

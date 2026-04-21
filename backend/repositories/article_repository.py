@@ -11,7 +11,7 @@ def find_all(conn) -> List[Dict]:
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
-            SELECT a.id, a.title, a.content, a.image_url, a.created_at,
+            SELECT a.id, a.title, a.content, a.image_url, a.created_at, a.difficulty,
                    GROUP_CONCAT(t.name) AS tags
             FROM articles a
             LEFT JOIN article_tags at2 ON a.id = at2.article_id
@@ -29,7 +29,7 @@ def find_by_id(conn, article_id: str) -> Optional[Dict]:
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
-            SELECT a.id, a.title, a.content, a.image_url, a.created_at,
+            SELECT a.id, a.title, a.content, a.image_url, a.created_at, a.difficulty,
                    GROUP_CONCAT(t.name) AS tags
             FROM articles a
             LEFT JOIN article_tags at2 ON a.id = at2.article_id
@@ -42,14 +42,15 @@ def find_by_id(conn, article_id: str) -> Optional[Dict]:
         cursor.close()
 
 
-def create(conn, title: str, content: str = None, image_url: str = None, tag_ids: list = None) -> str:
+def create(conn, title: str, content: str = None, image_url: str = None,
+           difficulty: str = 'Beginner', tag_ids: list = None) -> str:
     """Tạo article mới, trả về ID (UUID)."""
     cursor = conn.cursor()
     try:
         article_id = str(uuid.uuid4())
         cursor.execute(
-            "INSERT INTO articles (id, title, content, image_url) VALUES (%s, %s, %s, %s)",
-            (article_id, title, content, image_url)
+            "INSERT INTO articles (id, title, content, image_url, difficulty) VALUES (%s, %s, %s, %s, %s)",
+            (article_id, title, content, image_url, difficulty or 'Beginner')
         )
 
         # Gắn tags
@@ -70,7 +71,7 @@ def create(conn, title: str, content: str = None, image_url: str = None, tag_ids
 
 
 def update(conn, article_id: str, title: str = None, content: str = None,
-           image_url: str = None, tag_ids: list = None) -> bool:
+           image_url: str = None, difficulty: str = None, tag_ids: list = None) -> bool:
     """Cập nhật article, trả về True nếu thành công."""
     cursor = conn.cursor()
     try:
@@ -86,6 +87,9 @@ def update(conn, article_id: str, title: str = None, content: str = None,
         if image_url is not None:
             fields.append("image_url = %s")
             values.append(image_url)
+        if difficulty is not None:
+            fields.append("difficulty = %s")
+            values.append(difficulty)
 
         if fields:
             values.append(article_id)
