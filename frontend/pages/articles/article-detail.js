@@ -9,11 +9,8 @@ let _currentPopupPhonetic = null;
 let _currentPopupDefinition = null;
 let _currentPopupExample = null;
 let _currentPopupVietnamese = null;
-let _lastMouseX = 0;   // track vị trí chuột thực tế
-let _lastMouseY = 0;
 let _popupAudioUrl = null;
-let _popupHideTimer = null;      // debounce timer để tránh nhấp nháy khi di chuột
-let _currentHoveredWord = null;  // từ đang hover, tránh gọi API trùng lặp
+let _currentHoveredWord = null;  // từ đang click, tránh gọi API trùng lặp
 
 // ─── Render article ──────────────────────────────────────────────────────────
 function renderArticleDetail() {
@@ -163,11 +160,7 @@ function positionPopupNearElement(el) {
 function attachArticleDetailEvents() {
     renderArticleDetail();
 
-    // Track mouse position globally — used by scheduleHidePopup
-    document.addEventListener('mousemove', (e) => {
-        _lastMouseX = e.clientX;
-        _lastMouseY = e.clientY;
-    });
+
 
     // Back button
     const backBtn = document.getElementById('detail-back-btn');
@@ -208,14 +201,12 @@ function attachArticleDetailEvents() {
         quizBtn.addEventListener('click', () => animateTransition('quiz'));
     }
 
-    // ── HOVER-BASED word lookup ────────────────────────────────────────────────
+    // ── CLICK-BASED word lookup ────────────────────────────────────────────────
     document.querySelectorAll('.lookup-word').forEach(wordEl => {
-        wordEl.addEventListener('mouseenter', () => {
+        wordEl.addEventListener('click', (e) => {
+            e.stopPropagation();
             const word = wordEl.dataset.word;
             if (!word) return;
-
-            // Cancel any pending hide
-            if (_popupHideTimer) { clearTimeout(_popupHideTimer); _popupHideTimer = null; }
 
             // Position first (so popup appears immediately)
             positionPopupNearElement(wordEl);
@@ -226,19 +217,23 @@ function attachArticleDetailEvents() {
                 lookupWord(word, wordEl);
             }
         });
-
-        // On mouseleave from a WORD: schedule a hide check
-        // — NOT an instant hide, because mouse may be moving toward popup
-        wordEl.addEventListener('mouseleave', () => scheduleHidePopup(250));
     });
 
-    // Keep popup alive when mouse is inside it
+    // Close popup when clicking outside of it
+    document.addEventListener('click', (e) => {
+        const popup = document.getElementById('vocab-popup');
+        if (popup && popup.style.display !== 'none' && !popup.contains(e.target)) {
+            closeVocabPopup();
+            _currentHoveredWord = null;
+        }
+    });
+
+    // Prevent click inside popup from bubbling up to document and closing it
     const popup = document.getElementById('vocab-popup');
     if (popup) {
-        popup.addEventListener('mouseenter', () => {
-            if (_popupHideTimer) { clearTimeout(_popupHideTimer); _popupHideTimer = null; }
+        popup.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
-        popup.addEventListener('mouseleave', () => scheduleHidePopup(250));
     }
 
     // Save to Dictionary button
@@ -246,38 +241,6 @@ function attachArticleDetailEvents() {
     if (saveBtn) {
         saveBtn.addEventListener('click', () => saveCurrentWordToDictionary());
     }
-}
-
-// ─── scheduleHidePopup: xác nhận qua elementFromPoint trước khi đóng ──────────
-// Tránh false-positive do mouseleave fires khi popup xuất hiện che từ.
-function scheduleHidePopup(delay = 250) {
-    if (_popupHideTimer) clearTimeout(_popupHideTimer);
-    _popupHideTimer = setTimeout(() => {
-        _popupHideTimer = null;
-
-        const popup  = document.getElementById('vocab-popup');
-        if (!popup || popup.style.display === 'none') return;
-
-        // Lấy element thực sự dưới con trỏ chuột hiện tại
-        const hovered = document.elementFromPoint(_lastMouseX, _lastMouseY);
-
-        const overPopup = popup.contains(hovered);
-        const overWord  = hovered && hovered.classList && hovered.classList.contains('lookup-word');
-
-        if (overPopup || overWord) {
-            // Chuột vẫn đang ở trên popup hoặc từ → KHÔNG đóng
-            if (overWord && hovered.dataset.word && hovered.dataset.word !== _currentHoveredWord) {
-                // Sang từ mới → fetch từ mới
-                _currentHoveredWord = hovered.dataset.word;
-                lookupWord(hovered.dataset.word, hovered);
-            }
-            return;
-        }
-
-        // Chuột đã ra ngoài cả hai → đóng popup
-        closeVocabPopup();
-        _currentHoveredWord = null;
-    }, delay);
 }
 
 function closeVocabPopup() {
