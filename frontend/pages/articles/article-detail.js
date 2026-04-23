@@ -17,10 +17,10 @@ function renderArticleDetail() {
     const article = AppState.selectedArticle;
     if (!article) return;
 
-    const titleEl     = document.getElementById('detail-article-title');
+    const titleEl = document.getElementById('detail-article-title');
     const categoryTag = document.getElementById('detail-category-tag');
-    const difficultyEl= document.getElementById('detail-difficulty');
-    const readTimeEl  = document.getElementById('detail-read-time');
+    const difficultyEl = document.getElementById('detail-difficulty');
+    const readTimeEl = document.getElementById('detail-read-time');
 
     if (titleEl) titleEl.textContent = article.title || 'Untitled';
 
@@ -84,20 +84,20 @@ function renderArticleDetail() {
 
 // ─── Reading progress ─────────────────────────────────────────────────────────
 function setupReadingProgress() {
-    const bodyEl      = document.getElementById('detail-article-body');
-    const progressEl  = document.getElementById('detail-progress');
+    const bodyEl = document.getElementById('detail-article-body');
+    const progressEl = document.getElementById('detail-progress');
     const wordsReadEl = document.getElementById('detail-words-read');
     if (!bodyEl || !progressEl) return;
 
-    const article    = AppState.selectedArticle;
+    const article = AppState.selectedArticle;
     const totalWords = article && article.content ? article.content.split(/\s+/).length : 0;
 
     const handleScroll = () => {
-        const rect       = bodyEl.getBoundingClientRect();
-        const totalHeight= bodyEl.scrollHeight;
-        const viewportH  = window.innerHeight;
-        const scrolled   = Math.max(0, -rect.top + viewportH * 0.3);
-        const pct        = Math.min(100, Math.round((scrolled / totalHeight) * 100));
+        const rect = bodyEl.getBoundingClientRect();
+        const totalHeight = bodyEl.scrollHeight;
+        const viewportH = window.innerHeight;
+        const scrolled = Math.max(0, -rect.top + viewportH * 0.3);
+        const pct = Math.min(100, Math.round((scrolled / totalHeight) * 100));
         progressEl.textContent = `${pct}%`;
         if (wordsReadEl) {
             const wordsRead = Math.round((pct / 100) * totalWords);
@@ -129,16 +129,20 @@ function positionPopupNearElement(el) {
     const popup = document.getElementById('vocab-popup');
     if (!popup) return;
 
-    // Make visible temporarily to measure height
-    popup.style.visibility = 'hidden';
-    popup.style.display = 'block';
+    const isHidden = popup.style.display === 'none' || popup.style.display === '';
 
-    const rect    = el.getBoundingClientRect();
-    const popupW  = popup.offsetWidth  || 330;
-    const popupH  = popup.offsetHeight || 320;
-    const margin  = 10;
+    if (isHidden) {
+        // Make visible temporarily to measure height
+        popup.style.visibility = 'hidden';
+        popup.style.display = 'block';
+    }
 
-    let top  = rect.bottom + margin;
+    const rect = el.getBoundingClientRect();
+    const popupW = popup.offsetWidth || 330;
+    const popupH = popup.offsetHeight || 320;
+    const margin = 10;
+
+    let top = rect.bottom + margin;
     let left = rect.left;
 
     // Prevent right overflow
@@ -151,9 +155,12 @@ function positionPopupNearElement(el) {
     }
     if (top < 8) top = 8;
 
-    popup.style.top        = `${top}px`;
-    popup.style.left       = `${left}px`;
-    popup.style.visibility = 'visible';
+    popup.style.top = `${top}px`;
+    popup.style.left = `${left}px`;
+    
+    if (isHidden) {
+        popup.style.visibility = 'visible';
+    }
 }
 
 // ─── Attach events ────────────────────────────────────────────────────────────
@@ -250,28 +257,28 @@ function closeVocabPopup() {
 
 // ─── Lookup word: English dictionary + Vietnamese translation ─────────────────
 async function lookupWord(word, sourceEl) {
-    const popup         = document.getElementById('vocab-popup');
-    const wordEl        = document.getElementById('popup-word');
-    const phoneticEl    = document.getElementById('popup-phonetic');
-    const definitionEl  = document.getElementById('popup-definition');
-    const exampleEl     = document.getElementById('popup-example');
-    const vietnameseEl  = document.getElementById('popup-vietnamese');
-    const saveBtn       = document.getElementById('add-to-vocab-btn');
+    const popup = document.getElementById('vocab-popup');
+    const wordEl = document.getElementById('popup-word');
+    const phoneticEl = document.getElementById('popup-phonetic');
+    const definitionEl = document.getElementById('popup-definition');
+    const exampleEl = document.getElementById('popup-example');
+    const vietnameseEl = document.getElementById('popup-vietnamese');
+    const saveBtn = document.getElementById('add-to-vocab-btn');
 
     if (!popup) return;
 
     // Reset state
-    _currentPopupWord       = word;
-    _currentPopupPhonetic   = null;
+    _currentPopupWord = word;
+    _currentPopupPhonetic = null;
     _currentPopupDefinition = null;
-    _currentPopupExample    = null;
+    _currentPopupExample = null;
     _currentPopupVietnamese = null;
-    _popupAudioUrl          = null;
+    _popupAudioUrl = null;
 
-    if (wordEl)       wordEl.textContent = word;
-    if (phoneticEl)   phoneticEl.textContent = '…';
+    if (wordEl) wordEl.textContent = word;
+    if (phoneticEl) phoneticEl.textContent = '…';
     if (definitionEl) definitionEl.textContent = 'Looking up…';
-    if (exampleEl)    exampleEl.textContent = '';
+    if (exampleEl) exampleEl.textContent = '';
     if (vietnameseEl) vietnameseEl.textContent = 'Đang dịch…';
     if (saveBtn) {
         saveBtn.disabled = false;
@@ -300,32 +307,32 @@ async function lookupWord(word, sourceEl) {
 
     // ── Fill English data ─────────────────────────────────────────────────────
     if (dictData && Array.isArray(dictData) && dictData.length > 0) {
-        const entry      = dictData[0];
-        const phonetic   = entry.phonetics?.find(p => p.text)?.text || '';
-        const meaning    = entry.meanings?.[0];
+        const entry = dictData[0];
+        const phonetic = entry.phonetics?.find(p => p.text)?.text || '';
+        const meaning = entry.meanings?.[0];
         const definition = meaning?.definitions?.[0]?.definition || 'No definition found.';
-        const example    = meaning?.definitions?.[0]?.example || '';
+        const example = meaning?.definitions?.[0]?.example || '';
 
-        _currentPopupPhonetic   = phonetic;
+        _currentPopupPhonetic = phonetic;
         _currentPopupDefinition = definition;
-        _currentPopupExample    = example;
+        _currentPopupExample = example;
 
-        if (phoneticEl)   phoneticEl.textContent = phonetic || '';
+        if (phoneticEl) phoneticEl.textContent = phonetic || '';
         if (definitionEl) definitionEl.textContent = definition;
-        if (exampleEl)    exampleEl.textContent = example ? `"${example}"` : '';
+        if (exampleEl) exampleEl.textContent = example ? `"${example}"` : '';
 
         _popupAudioUrl = entry.phonetics?.find(p => p.audio)?.audio || null;
         const audioBtn = document.getElementById('popup-audio-btn');
         if (audioBtn) {
             audioBtn.style.opacity = _popupAudioUrl ? '1' : '0.35';
             audioBtn.onclick = _popupAudioUrl
-                ? () => new Audio(_popupAudioUrl).play().catch(() => {})
+                ? () => new Audio(_popupAudioUrl).play().catch(() => { })
                 : null;
         }
     } else {
-        if (phoneticEl)   phoneticEl.textContent = '';
+        if (phoneticEl) phoneticEl.textContent = '';
         if (definitionEl) definitionEl.textContent = 'Không tìm thấy trong từ điển.';
-        if (exampleEl)    exampleEl.textContent = '';
+        if (exampleEl) exampleEl.textContent = '';
     }
 
     // ── Fill Vietnamese data ──────────────────────────────────────────────────
@@ -357,11 +364,11 @@ async function saveCurrentWordToDictionary() {
         await apiFetch('/api/vocabulary', {
             method: 'POST',
             body: JSON.stringify({
-                word:       _currentPopupWord,
+                word: _currentPopupWord,
                 article_id: articleId,
-                phonetic:   _currentPopupPhonetic   || '',
+                phonetic: _currentPopupPhonetic || '',
                 definition: _currentPopupDefinition || '',
-                example:    _currentPopupExample    || '',
+                example: _currentPopupExample || '',
             }),
         });
 
@@ -396,7 +403,7 @@ function showToast(msg, type = 'success') {
     if (existing) existing.remove();
 
     const colors = { success: '#22c55e', error: '#ef4444', info: '#64748b' };
-    const icons  = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-info-circle' };
+    const icons = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-info-circle' };
 
     const toast = document.createElement('div');
     toast.id = 'article-toast';
