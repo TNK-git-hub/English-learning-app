@@ -351,13 +351,26 @@
     padding: 24px;
     z-index: 9999;
     width: 340px;
-    display: none;           /* hidden by default; JS sets display:block */
-    animation: popupIn .18s ease;
+    /* Hidden state: invisible + no pointer-events so it doesn't block words */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transform: translateY(6px);
+    display: block;           /* always in layout; visibility controlled by opacity */
 }
 
-/* Legacy .show support (kept for safety) */
+/* Visible state toggled by JS via .show class */
 .interactive-popup.show {
-    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* Preserve legacy display:none initial hide from HTML inline style */
+.interactive-popup[style*="display: none"],
+.interactive-popup[style*="display:none"] {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 @keyframes popupIn {

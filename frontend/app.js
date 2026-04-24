@@ -30,16 +30,28 @@ const ADMIN_VIEWS = ['admin-articles', 'admin-categories', 'admin-users'];
  * Load all HTML templates into the DOM
  */
 async function loadTemplates() {
+    const loaded = [];
+    const failed = [];
     for (const path of TEMPLATE_PATHS) {
         try {
             const response = await fetch(path);
             if (response.ok) {
                 const html = await response.text();
                 document.body.insertAdjacentHTML('beforeend', html);
+                loaded.push(path);
+            } else {
+                console.warn(`[Templates] HTTP ${response.status} — failed to load: ${path}`);
+                failed.push(path);
             }
         } catch (error) {
-            console.warn(`Failed to load template: ${path}`, error);
+            console.warn(`[Templates] Network error loading: ${path}`, error.message);
+            failed.push(path);
         }
+    }
+    if (failed.length) {
+        console.error(`[Templates] ${failed.length} template(s) failed to load:`, failed);
+    } else {
+        console.log(`[Templates] All ${loaded.length} templates loaded OK`);
     }
 }
 
@@ -56,8 +68,11 @@ function renderApp() {
     }
 
     // ADMIN GUARD: redirect non-admins away from admin pages
+    // Also check localStorage as fallback in case AppState.user not yet populated
     if (ADMIN_VIEWS.includes(AppState.currentView)) {
-        if (!AppState.user || AppState.user.role !== 'admin') {
+        const role = AppState.user?.role
+            || JSON.parse(localStorage.getItem('user') || '{}').role;
+        if (role !== 'admin') {
             AppState.currentView = 'articles';
         }
     }
@@ -85,6 +100,19 @@ function renderApp() {
     const template = document.getElementById(config.templateId);
     if (!template) {
         console.error(`Template not found: ${config.templateId}`);
+        // Show visible error so the user knows something went wrong
+        container.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:sans-serif;">
+                <div style="font-size:48px;">⚠️</div>
+                <h2 style="color:#0f172a;margin:0;">Page could not be loaded</h2>
+                <p style="color:#64748b;margin:0;">Template <code>${config.templateId}</code> was not found.<br>
+                This usually means the app is being opened as a local file.<br>
+                Please serve it through a web server (e.g. VS Code Live Server).</p>
+                <button onclick="animateTransition('login')" 
+                    style="margin-top:8px;padding:10px 24px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                    ← Back to Login
+                </button>
+            </div>`;
         return;
     }
 
@@ -191,7 +219,165 @@ function attachDashboardEvents() {
 
     // Fetch real dashboard data and populate
     _loadDashboardData();
+
+    // ── Edit Goal buttons ──────────────────────────────────────────────────
+    _attachEditGoalButton(
+        'edit-vocab-goal-btn',
+        'learnup_daily_vocab_goal',
+        10,
+        'Daily Vocabulary Goal',
+        'words / day',
+        (newGoal) => _updateVocabGoalUI(newGoal)
+    );
+    _attachEditGoalButton(
+        'edit-reading-goal-btn',
+        'learnup_weekly_reading_goal',
+        5,
+        'Weekly Reading Goal',
+        'articles / week',
+        (newGoal) => _updateReadingGoalUI(newGoal)
+    );
 }
+
+/**
+ * Shows a small popover under `btnId` letting the user edit a numeric goal.
+ * Saves to localStorage under `storageKey`, then calls `onSave(newValue)`.
+ */
+function _attachEditGoalButton(btnId, storageKey, defaultVal, label, unit, onSave) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        // Remove any existing popover
+        document.querySelectorAll('.goal-edit-popover').forEach(p => p.remove());
+
+        const currentGoal = parseInt(localStorage.getItem(storageKey) || defaultVal, 10);
+
+        const popover = document.createElement('div');
+        popover.className = 'goal-edit-popover';
+        popover.style.cssText = `
+            position: absolute;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 16px 20px;
+            z-index: 9999;
+            min-width: 220px;
+        `;
+        popover.innerHTML = `
+            <p style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:0.5px;margin-bottom:10px;text-transform:uppercase;">${label}</p>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <input type="number" id="goal-edit-input" min="1" max="100" value="${currentGoal}"
+                    style="width:70px;padding:6px 10px;border:1.5px solid #2563eb;border-radius:8px;
+                           font-size:18px;font-weight:700;color:#0f172a;text-align:center;outline:none;">
+                <span style="font-size:13px;color:#64748b;">${unit}</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px;">
+                <button id="goal-edit-save" style="flex:1;padding:7px 0;background:#2563eb;color:#fff;border:none;
+                        border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+                <button id="goal-edit-cancel" style="flex:1;padding:7px 0;background:#f1f5f9;color:#475569;border:none;
+                        border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+            </div>
+        `;
+
+        // Position below the button
+        const rect = btn.getBoundingClientRect();
+        popover.style.top  = `${rect.bottom + window.scrollY + 6}px`;
+        popover.style.left = `${rect.left + window.scrollX}px`;
+        document.body.appendChild(popover);
+
+        const input = document.getElementById('goal-edit-input');
+        input.focus();
+        input.select();
+
+        document.getElementById('goal-edit-save').addEventListener('click', () => {
+            const newGoal = Math.max(1, Math.min(100, parseInt(input.value, 10) || defaultVal));
+            localStorage.setItem(storageKey, newGoal);
+            popover.remove();
+            onSave(newGoal);
+        });
+
+        document.getElementById('goal-edit-cancel').addEventListener('click', () => popover.remove());
+
+        // Close on outside click
+        setTimeout(() => {
+            document.addEventListener('click', function close(ev) {
+                if (!popover.contains(ev.target)) {
+                    popover.remove();
+                    document.removeEventListener('click', close);
+                }
+            });
+        }, 0);
+    });
+}
+
+/**
+ * Re-renders the Daily Vocab Goal card with a new goal value.
+ */
+function _updateVocabGoalUI(newGoal) {
+    // Re-read today's count from the DOM (already set by _loadDashboardData)
+    const currentEl = document.getElementById('goal-vocab-current');
+    const todayWords = currentEl ? parseInt(currentEl.textContent, 10) || 0 : 0;
+    const pct = Math.min(100, Math.round(todayWords / newGoal * 100));
+
+    const totalEl = document.getElementById('goal-vocab-total');
+    if (totalEl) totalEl.textContent = newGoal;
+    const barEl = document.getElementById('goal-vocab-bar');
+    if (barEl) barEl.style.width = `${pct}%`;
+    const pctTxt = document.getElementById('goal-vocab-percent-text');
+    if (pctTxt) pctTxt.textContent = `${pct}% Complete`;
+    const remEl = document.getElementById('goal-vocab-remain');
+    if (remEl) remEl.textContent = Math.max(0, newGoal - todayWords);
+
+    // Also update overview Daily Goal circle
+    const circumference = 2 * Math.PI * 50;
+    const offset = circumference - (pct / 100) * circumference;
+    const circle = document.getElementById('overview-daily-circle');
+    if (circle) { circle.style.strokeDasharray = circumference; circle.style.strokeDashoffset = offset; }
+    const pctOverview = document.getElementById('overview-daily-percent');
+    if (pctOverview) pctOverview.textContent = `${pct}%`;
+    const totOverview = document.getElementById('overview-daily-total');
+    if (totOverview) totOverview.textContent = newGoal;
+    const remOverview = document.getElementById('overview-daily-remain');
+    if (remOverview) remOverview.textContent = Math.max(0, newGoal - todayWords);
+}
+
+/**
+ * Re-renders the Weekly Reading Goal card with a new goal value.
+ */
+function _updateReadingGoalUI(newGoal) {
+    const curEl = document.getElementById('goal-reading-current');
+    const weeklyAttempts = curEl ? parseInt(curEl.textContent, 10) || 0 : 0;
+    const pct = Math.round(Math.min(weeklyAttempts, newGoal) / newGoal * 100);
+
+    const totEl = document.getElementById('goal-reading-total');
+    if (totEl) totEl.textContent = newGoal;
+
+    const circumference = 2 * Math.PI * 38;
+    const offset = circumference - (pct / 100) * circumference;
+    const circle = document.getElementById('goal-reading-circle');
+    if (circle) { circle.style.strokeDasharray = circumference; circle.style.strokeDashoffset = offset; }
+
+    const pctTxt = document.getElementById('goal-reading-percent-text');
+    if (pctTxt) pctTxt.textContent = `${pct}%`;
+
+    // Regenerate step dots
+    const dots = document.querySelectorAll('#reading-step-dots .step-dot');
+    dots.forEach((dot, idx) => {
+        if (idx < weeklyAttempts) {
+            dot.classList.add('completed');
+            dot.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else {
+            dot.classList.remove('completed');
+            dot.innerHTML = '<i class="fa-solid fa-minus"></i>';
+        }
+    });
+}
+
+// ─── Keep _loadDashboardData goal references consistent with localStorage ──────
 
 /**
  * Fetches /api/users/dashboard and populates all dynamic elements.
@@ -239,8 +425,8 @@ async function _loadDashboardData() {
         const artTrendEl = document.getElementById('overview-stat-art-trend');
         if (artTrendEl) artTrendEl.textContent = `${overallPct}% acc.`;
 
-        // ── Daily goal circle (based on today's vocab vs goal of 10) ──
-        const DAILY_GOAL = 10;
+        // ── Daily goal circle (based on today's vocab vs saved goal) ──
+        const DAILY_GOAL = parseInt(localStorage.getItem('learnup_daily_vocab_goal') || '10', 10);
         const dailyPct = Math.min(100, Math.round(todayWords / DAILY_GOAL * 100));
         const circumference = 2 * Math.PI * 50; // r=50
         const offset = circumference - (dailyPct / 100) * circumference;
@@ -335,9 +521,11 @@ async function _loadDashboardData() {
         }
 
         // ── Goals tab: Daily Vocab ─────────────────────────────────────
-        const WEEKLY_READ_GOAL = 5;
+        const WEEKLY_READ_GOAL = parseInt(localStorage.getItem('learnup_weekly_reading_goal') || '5', 10);
         const vocabCurrent = document.getElementById('goal-vocab-current');
         if (vocabCurrent) vocabCurrent.textContent = todayWords;
+        const vocabTotal = document.getElementById('goal-vocab-total');
+        if (vocabTotal) vocabTotal.textContent = DAILY_GOAL;
         const vocabBar = document.getElementById('goal-vocab-bar');
         if (vocabBar) vocabBar.style.width = `${dailyPct}%`;
         const vocabPctTxt = document.getElementById('goal-vocab-percent-text');
@@ -358,6 +546,8 @@ async function _loadDashboardData() {
         }
         const readCur = document.getElementById('goal-reading-current');
         if (readCur) readCur.textContent = weeklyAttempts;
+        const readTot = document.getElementById('goal-reading-total');
+        if (readTot) readTot.textContent = WEEKLY_READ_GOAL;
         const readPctTxt = document.getElementById('goal-reading-percent-text');
         if (readPctTxt) readPctTxt.textContent = `${readingPct}%`;
 

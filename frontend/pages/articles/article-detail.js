@@ -10,7 +10,9 @@ let _currentPopupDefinition = null;
 let _currentPopupExample = null;
 let _currentPopupVietnamese = null;
 let _popupAudioUrl = null;
-let _currentHoveredWord = null;  // từ đang click, tránh gọi API trùng lặp
+let _currentHoveredWord = null;   // từ đang hover, tránh gọi API trùng lặp
+let _showPopupTimer   = null;     // delay trước khi hiện popup (tránh flash khi di nhanh)
+let _hidePopupTimer   = null;     // grace period trước khi ẩn popup
 
 // ─── Render article ──────────────────────────────────────────────────────────
 function renderArticleDetail() {
@@ -124,25 +126,18 @@ function processTextForLookup(text) {
     }).join('');
 }
 
-// ─── Position popup below the hovered element ────────────────────────────────
+// ─── Position popup below the hovered element ──────────────────────────────────
 function positionPopupNearElement(el) {
     const popup = document.getElementById('vocab-popup');
     if (!popup) return;
 
-    const isHidden = popup.style.display === 'none' || popup.style.display === '';
-
-    if (isHidden) {
-        // Make visible temporarily to measure height
-        popup.style.visibility = 'hidden';
-        popup.style.display = 'block';
-    }
-
     const rect = el.getBoundingClientRect();
-    const popupW = popup.offsetWidth || 330;
+    const popupW = 340;  // matches CSS width
     const popupH = popup.offsetHeight || 320;
     const margin = 10;
 
-    let top = rect.bottom + margin;
+    // position:fixed → viewport-relative coords (no scrollY/scrollX needed)
+    let top  = rect.bottom + margin;
     let left = rect.left;
 
     // Prevent right overflow
@@ -155,12 +150,11 @@ function positionPopupNearElement(el) {
     }
     if (top < 8) top = 8;
 
-    popup.style.top = `${top}px`;
+    popup.style.top  = `${top}px`;
     popup.style.left = `${left}px`;
-    
-    if (isHidden) {
-        popup.style.visibility = 'visible';
-    }
+
+    // Make visible via CSS class (opacity transition)
+    popup.classList.add('show');
 }
 
 // ─── Attach events ────────────────────────────────────────────────────────────
@@ -208,38 +202,50 @@ function attachArticleDetailEvents() {
         quizBtn.addEventListener('click', () => animateTransition('quiz'));
     }
 
-    // ── CLICK-BASED word lookup ────────────────────────────────────────────────
+    // ── HOVER-BASED word lookup ────────────────────────────────────────────────
+    // Show popup after a short delay so fast cursor passes don't trigger it.
+    // A grace period before hiding lets the user move the cursor into the popup.
     document.querySelectorAll('.lookup-word').forEach(wordEl => {
-        wordEl.addEventListener('click', (e) => {
-            e.stopPropagation();
+        wordEl.addEventListener('mouseenter', () => {
             const word = wordEl.dataset.word;
             if (!word) return;
 
-            // Position first (so popup appears immediately)
-            positionPopupNearElement(wordEl);
+            // Cancel any pending hide
+            clearTimeout(_hidePopupTimer);
 
-            // Only re-fetch if different word
-            if (word !== _currentHoveredWord) {
-                _currentHoveredWord = word;
-                lookupWord(word, wordEl);
-            }
+            // Schedule show after 300 ms
+            _showPopupTimer = setTimeout(() => {
+                positionPopupNearElement(wordEl);
+                if (word !== _currentHoveredWord) {
+                    _currentHoveredWord = word;
+                    lookupWord(word, wordEl);
+                }
+            }, 300);
+        });
+
+        wordEl.addEventListener('mouseleave', () => {
+            // Cancel a pending show so it doesn't open after cursor left
+            clearTimeout(_showPopupTimer);
+
+            // Give the user 200 ms to move into the popup before hiding
+            _hidePopupTimer = setTimeout(() => {
+                closeVocabPopup();
+                _currentHoveredWord = null;
+            }, 200);
         });
     });
 
-    // Close popup when clicking outside of it
-    document.addEventListener('click', (e) => {
-        const popup = document.getElementById('vocab-popup');
-        if (popup && popup.style.display !== 'none' && !popup.contains(e.target)) {
-            closeVocabPopup();
-            _currentHoveredWord = null;
-        }
-    });
-
-    // Prevent click inside popup from bubbling up to document and closing it
+    // Keep popup visible while the cursor is inside it
     const popup = document.getElementById('vocab-popup');
     if (popup) {
-        popup.addEventListener('click', (e) => {
-            e.stopPropagation();
+        popup.addEventListener('mouseenter', () => {
+            clearTimeout(_hidePopupTimer);
+        });
+        popup.addEventListener('mouseleave', () => {
+            _hidePopupTimer = setTimeout(() => {
+                closeVocabPopup();
+                _currentHoveredWord = null;
+            }, 200);
         });
     }
 
@@ -252,7 +258,7 @@ function attachArticleDetailEvents() {
 
 function closeVocabPopup() {
     const popup = document.getElementById('vocab-popup');
-    if (popup) popup.style.display = 'none';
+    if (popup) popup.classList.remove('show');
 }
 
 // ─── Lookup word: English dictionary + Vietnamese translation ─────────────────
@@ -287,7 +293,7 @@ async function lookupWord(word, sourceEl) {
     }
 
     // Show popup positioned at the hovered word
-    if (sourceEl) positionPopupNearElement(sourceEl);
+    if (sourceEl) positionPopupNearElement(sourceEl);  // also adds .show
 
     // ── Fetch English definition ───────────────────────────────────────────────
     const dictPromise = fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
