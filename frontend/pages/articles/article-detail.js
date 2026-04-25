@@ -126,35 +126,46 @@ function processTextForLookup(text) {
     }).join('');
 }
 
-// ─── Position popup below the hovered element ──────────────────────────────────
+// ─── Position popup near the hovered element ─────────────────────────────────
 function positionPopupNearElement(el) {
     const popup = document.getElementById('vocab-popup');
     if (!popup) return;
 
-    const rect = el.getBoundingClientRect();
-    const popupW = 340;  // matches CSS width
-    const popupH = popup.offsetHeight || 320;
-    const margin = 10;
+    const rect   = el.getBoundingClientRect();
+    const popupW = 340;           // matches CSS min-width
+    const popupH = popup.offsetHeight || 300;
+    const margin = 12;            // gap between word and popup edge
+    const pad    = 12;            // minimum clearance from viewport edges
 
-    // position:fixed → viewport-relative coords (no scrollY/scrollX needed)
-    let top  = rect.bottom + margin;
-    let left = rect.left;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // Prevent right overflow
-    if (left + popupW > window.innerWidth - 16) left = window.innerWidth - popupW - 16;
-    // Prevent left overflow
-    if (left < 8) left = 8;
-    // If not enough room below, show above
-    if (rect.bottom + margin + popupH > window.innerHeight) {
-        top = rect.top - popupH - margin;
+    // ── Horizontal: center popup under the word, clamp to viewport ──
+    let left = rect.left + rect.width / 2 - popupW / 2;
+    left = Math.max(pad, Math.min(left, vw - popupW - pad));
+
+    // ── Vertical: prefer below; flip above when below has less space ──
+    const spaceBelow = vh - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+    let top;
+    if (spaceBelow >= popupH || spaceBelow >= spaceAbove) {
+        top = rect.bottom + margin;       // show below
+    } else {
+        top = rect.top - popupH - margin; // show above
     }
-    if (top < 8) top = 8;
+    top = Math.max(pad, Math.min(top, vh - popupH - pad));
 
+    // Suppress CSS transition during reposition so there's no slide/jitter
+    // when called a 2nd time after API data loads and changes popup height.
+    popup.style.transition = 'none';
     popup.style.top  = `${top}px`;
     popup.style.left = `${left}px`;
 
-    // Make visible via CSS class (opacity transition)
-    popup.classList.add('show');
+    // Re-enable transition on next paint, then reveal via .show
+    requestAnimationFrame(() => {
+        popup.style.transition = '';
+        popup.classList.add('show');
+    });
 }
 
 // ─── Attach events ────────────────────────────────────────────────────────────
@@ -257,6 +268,9 @@ function attachArticleDetailEvents() {
 }
 
 function closeVocabPopup() {
+    clearTimeout(_showPopupTimer);
+    clearTimeout(_hidePopupTimer);
+    _currentHoveredWord = null;
     const popup = document.getElementById('vocab-popup');
     if (popup) popup.classList.remove('show');
 }
@@ -383,6 +397,8 @@ async function saveCurrentWordToDictionary() {
             saveBtn.style.background = '#22c55e';
         }
         showToast(`"${_currentPopupWord}" đã lưu vào từ điển!`, 'success');
+        clearTimeout(_showPopupTimer);
+        clearTimeout(_hidePopupTimer);
         setTimeout(() => closeVocabPopup(), 1500);
 
     } catch (err) {
