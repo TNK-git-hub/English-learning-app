@@ -724,7 +724,7 @@ function setupUserModal() {
     });
 
     const saveBtn = document.getElementById('user-modal-save');
-    if (saveBtn) saveBtn.addEventListener('click', saveUser);
+    if (saveBtn) saveBtn.addEventListener('click', adminSaveUser);
 }
 
 function openUserModal() {
@@ -740,7 +740,7 @@ function openUserModal() {
     if (nameInput) nameInput.focus();
 }
 
-async function saveUser() {
+async function adminSaveUser() {
     const name = document.getElementById('user-modal-name')?.value.trim();
     const email = document.getElementById('user-modal-email')?.value.trim();
     const password = document.getElementById('user-modal-password')?.value;
