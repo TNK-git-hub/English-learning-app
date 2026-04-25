@@ -23,6 +23,7 @@ columns = {
     "phonetic": "VARCHAR(255)",
     "definition": "TEXT",
     "example": "TEXT",
+    "vietnamese": "TEXT",
 }
 
 for col, col_type in columns.items():

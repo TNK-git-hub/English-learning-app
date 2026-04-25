@@ -86,6 +86,49 @@ async function showVocabPopup(word, targetElement) {
                     new Audio(audioUrl).play();
                 });
             }
+
+            // Save to database
+            const saveBtn = popup.querySelector('#save-vocab-btn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', async () => {
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    saveBtn.disabled = true;
+                    try {
+                        const articleId = targetElement.closest('.article-content')?.parentElement?.dataset?.articleId || null;
+                        
+                        // Using MyMemory to get Vietnamese translation
+                        let vietnamese = '';
+                        try {
+                            const viResp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|vi`);
+                            if (viResp.ok) {
+                                const viData = await viResp.json();
+                                if (viData.responseData?.translatedText) {
+                                    vietnamese = viData.responseData.translatedText;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to translate to vi:', e);
+                        }
+
+                        // Save to backend
+                        await saveVocabularyAPI({
+                            word: word,
+                            phonetic: phonetic,
+                            definition: definition,
+                            example: example,
+                            vietnamese: vietnamese,
+                            article_id: articleId
+                        });
+
+                        saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                        saveBtn.style.background = '#10b981'; // Green
+                    } catch (err) {
+                        console.error('Error saving vocab:', err);
+                        saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                        saveBtn.disabled = false;
+                    }
+                });
+            }
         } else {
             popup.querySelector('.popup-text').textContent = 'Word not found in dictionary.';
         }
