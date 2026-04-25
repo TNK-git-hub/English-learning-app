@@ -365,12 +365,19 @@ async function lookupWord(word, sourceEl) {
         if (vietnameseEl) vietnameseEl.textContent = '(không dịch được)';
     }
 
-    // ── Enable save button now that data is loaded ─────────────────────────
+    // ── Enable save button only if definition was found ──────────────────────
     if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.style.background = '';
-        saveBtn.style.cursor = '';
-        saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+        if (_currentPopupDefinition && _currentPopupDefinition !== 'No definition found.' && _currentPopupDefinition !== 'Không tìm thấy trong từ điển.') {
+            saveBtn.disabled = false;
+            saveBtn.style.background = '';
+            saveBtn.style.cursor = '';
+            saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+        } else {
+            saveBtn.disabled = true;
+            saveBtn.style.background = '#94a3b8';
+            saveBtn.style.cursor = 'not-allowed';
+            saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+        }
     }
 
     // Re-position after content loaded (height may have changed)

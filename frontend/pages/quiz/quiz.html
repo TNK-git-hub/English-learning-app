@@ -48,59 +48,32 @@
                         <p style="color: #64748b; font-size: 16px; margin-top: 8px;">Challenge yourself and track your learning progress.</p>
                     </div>
 
+                    <!-- Create Quiz Section -->
+                    <div class="quiz-create-section">
+                        <div class="quiz-create-card">
+                            <div class="quiz-create-icon">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                            <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">Create New Quiz</h3>
+                            <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Generate a vocabulary quiz from your saved library words.</p>
+                            <div class="quiz-create-buttons">
+                                <button class="quiz-create-btn" data-count="5">
+                                    <i class="fa-solid fa-bolt"></i> 5 Words
+                                </button>
+                                <button class="quiz-create-btn" data-count="10">
+                                    <i class="fa-solid fa-fire"></i> 10 Words
+                                </button>
+                                <button class="quiz-create-btn" data-count="20">
+                                    <i class="fa-solid fa-trophy"></i> 20 Words
+                                </button>
+                            </div>
+                            <p class="quiz-create-error" id="quiz-create-error" style="display: none;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Generated Quiz Cards -->
                     <div class="quiz-selection-grid" id="quiz-list-container">
-                        <!-- Quizzes will be injected here -->
-                        <div class="quiz-card" data-quiz-id="q_vocab">
-                            <span class="category-tag">Library</span>
-                            <h3>Vocabulary Mastery</h3>
-                            <p>Test your knowledge on the core vocabulary from your learning library.</p>
-                            <div class="quiz-card-footer">
-                                <div class="quiz-card-meta">
-                                    <span><i class="fa-regular fa-clock"></i> 10 mins</span>
-                                    <span><i class="fa-solid fa-signal"></i> Mixed</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
-                            </div>
-                        </div>
-
-                        <div class="quiz-card" data-quiz-id="q1">
-                            <span class="category-tag">Vocabulary</span>
-                            <h3>Business Idioms Master</h3>
-                            <p>Test your understanding of common professional expressions used in the workplace.</p>
-                            <div class="quiz-card-footer">
-                                <div class="quiz-card-meta">
-                                    <span><i class="fa-regular fa-clock"></i> 5 mins</span>
-                                    <span><i class="fa-solid fa-signal"></i> Intermediate</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
-                            </div>
-                        </div>
-
-                        <div class="quiz-card" data-quiz-id="q2">
-                            <span class="category-tag">Grammar</span>
-                            <h3>Present Perfect vs Past Simple</h3>
-                            <p>Clear up the confusion between these two essential English tenses with practical examples.</p>
-                            <div class="quiz-card-footer">
-                                <div class="quiz-card-meta">
-                                    <span><i class="fa-regular fa-clock"></i> 8 mins</span>
-                                    <span><i class="fa-solid fa-signal"></i> Beginner</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
-                            </div>
-                        </div>
-
-                        <div class="quiz-card" data-quiz-id="q3">
-                            <span class="category-tag">Phrasal Verbs</span>
-                            <h3>Travel & Exploration</h3>
-                            <p>Learn verbs like 'set off', 'check in', and 'get away' through contextual questions.</p>
-                            <div class="quiz-card-footer">
-                                <div class="quiz-card-meta">
-                                    <span><i class="fa-regular fa-clock"></i> 6 mins</span>
-                                    <span><i class="fa-solid fa-signal"></i> Advanced</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
-                            </div>
-                        </div>
+                        <!-- Quiz cards will be injected here dynamically -->
                     </div>
                 </div>
 

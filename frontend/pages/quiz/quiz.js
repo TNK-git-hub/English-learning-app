@@ -1,128 +1,14 @@
 /**
- * Quiz Page — Logic for interactive assessments
+ * Quiz Page — Dynamic vocabulary quiz from user's library
  */
 
-// Enhanced Mock Data with Explanations
-const MOCK_QUIZZES = [
-    {
-        id: "q_vocab",
-        title: "Vocabulary Mastery",
-        category: "Library",
-        difficulty: "Mixed",
-        duration: "10 mins",
-        questions: [
-            {
-                question: "What is the meaning of 'unprecedented'?",
-                options: ["Never done or known before", "Very common", "Expected", "Repeated"],
-                correct: 0,
-                explanation: "'Unprecedented' means never done or known before. Example: The new AI model predicts outcomes with unprecedented accuracy."
-            },
-            {
-                question: "The word 'collaborate' means:",
-                options: ["To compete", "To work together", "To argue", "To separate"],
-                correct: 1,
-                explanation: "'Collaborate' means to work jointly on an activity or project. Example: Challenges around collaboration and company culture remain significant concerns."
-            },
-            {
-                question: "What is the synonym of 'eliminate'?",
-                options: ["Add", "Include", "Remove", "Create"],
-                correct: 2,
-                explanation: "'Eliminate' means to completely remove or get rid of something. Example: Manchester City must play the perfect game to eliminate Real Madrid."
-            },
-            {
-                question: "'Aesthetic' relates to:",
-                options: ["Beauty and art appreciation", "Mathematics", "Physical exercise", "Cooking"],
-                correct: 0,
-                explanation: "'Aesthetic' is concerned with beauty or the appreciation of beauty. Example: Every element reflects centuries of refined aesthetic sensibility."
-            },
-            {
-                question: "What does 'infrastructure' mean?",
-                options: ["A type of building material", "Basic physical structures needed for society", "The design of furniture", "A method of transport"],
-                correct: 1,
-                explanation: "'Infrastructure' refers to the basic physical and organizational structures and facilities needed for the operation of a society or enterprise."
-            },
-            {
-                question: "In the phrase 'financial stability', what does 'stability' mean?",
-                options: ["The state of being steady and not changing", "The growth of money", "The decline of economy", "The exchange of currency"],
-                correct: 0,
-                explanation: "'Stability' is the state of being stable, steady, and not likely to change or fail."
-            },
-            {
-                question: "What is a 'hybrid work model'?",
-                options: ["Working only from home", "Working only in office", "A mix of remote and office work", "Working while traveling"],
-                correct: 2,
-                explanation: "A hybrid work model is a type of flexible working where an employee's time is split between working from home and working in an office."
-            },
-            {
-                question: "'Culinary traditions' refers to:",
-                options: ["Sports activities", "Religious ceremonies", "Food and cooking customs", "Musical performances"],
-                correct: 2,
-                explanation: "'Culinary' means relating to or used in cooking. Traditions are long-established customs or beliefs."
-            },
-            {
-                question: "What does 'adoption' mean in a technology context?",
-                options: ["The rejection of old methods", "The acceptance and use of something new", "Legally taking someone's child", "A training program"],
-                correct: 1,
-                explanation: "Technology adoption is the choice to acquire and use a new invention or innovation."
-            },
-            {
-                question: "The phrase 'career prospects' means:",
-                options: ["Current salary", "Past achievements", "Work schedule", "Future opportunities in one's job"],
-                correct: 3,
-                explanation: "'Career prospects' are the possibilities of future success in a career."
-            }
-        ]
-    },
-    {
-        id: "q1",
-        title: "Business Idioms Master",
-        category: "Vocabulary",
-        difficulty: "Intermediate",
-        duration: "5 mins",
-        questions: [
-            {
-                question: "What does 'to get the ball rolling' mean?",
-                options: ["To start a process", "To play soccer", "To make a mistake", "To end a meeting"],
-                correct: 0,
-                explanation: "'To get the ball rolling' is a common business idiom that means to set a process or activity in motion, especially one that is important or complex."
-            },
-            {
-                question: "If someone 'cuts to the chase', they...",
-                options: ["Run very fast", "Stop talking", "Get to the main point", "Start a fight"],
-                correct: 2,
-                explanation: "Originating from the film industry, 'cut to the chase' means to skip the preamble and get directly to the most important part of a discussion or story."
-            },
-            {
-                question: "Which idiom means 'to do something well'?",
-                options: ["Break a leg", "Hit it out of the park", "Cry wolf", "Beat around the bush"],
-                correct: 1,
-                explanation: "'Hit it out of the park' is a baseball metaphor used in business to describe an outstanding performance or a major success."
-            }
-        ]
-    },
-    {
-        id: "q2",
-        title: "Present Perfect vs Past Simple",
-        category: "Grammar",
-        difficulty: "Beginner",
-        duration: "8 mins",
-        questions: [
-            {
-                question: "I _______ to London three times.",
-                options: ["was", "have been", "went", "am being"],
-                correct: 1,
-                explanation: "We use the Present Perfect ('have been') to talk about experiences at an unspecified time in the past, often with 'three times', 'ever', or 'never'."
-            },
-            {
-                question: "She _______ her keys yesterday.",
-                options: ["lost", "has lost", "loses", "was losing"],
-                correct: 0,
-                explanation: "The Past Simple ('lost') is used here because there is a specific finished time reference ('yesterday')."
-            }
-        ]
-    }
-];
+// ─── Quiz State ──────────────────────────────────────────────────────────────
+let _generatedQuizzes = [];   // array of generated quiz objects
+let _quizIdCounter = 0;       // for unique quiz IDs
 
+/**
+ * Attach all quiz page events
+ */
 function attachQuizEvents() {
     // Navigation & Common UI
     const navLinks = {
@@ -144,12 +30,11 @@ function attachQuizEvents() {
         }
     });
 
-    // Quiz Selection
-    const quizCards = document.querySelectorAll('.quiz-card');
-    quizCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const quizId = card.dataset.quizId;
-            startQuiz(quizId);
+    // Create Quiz Buttons
+    document.querySelectorAll('.quiz-create-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const count = parseInt(btn.dataset.count);
+            createQuizFromLibrary(count);
         });
     });
 
@@ -193,13 +78,215 @@ function attachQuizEvents() {
             }
         });
     }
+
+    // Render existing quiz cards (if any from this session)
+    renderQuizCards();
 }
+
+// ─── Create Quiz from Library ─────────────────────────────────────────────────
+
+/**
+ * Fetch user's vocabulary and generate a quiz with the specified word count
+ */
+async function createQuizFromLibrary(wordCount) {
+    const errorEl = document.getElementById('quiz-create-error');
+
+    // Hide previous error
+    if (errorEl) errorEl.style.display = 'none';
+
+    // Show loading on the clicked button
+    const btn = document.querySelector(`.quiz-create-btn[data-count="${wordCount}"]`);
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…';
+    }
+
+    try {
+        const response = await fetchVocabularyAPI();
+
+        if (!response.success || !response.data) {
+            throw new Error('Failed to load vocabulary.');
+        }
+
+        // Filter words that have definitions
+        const wordsWithDef = response.data.filter(v =>
+            v.definition && v.definition.trim() &&
+            v.definition !== 'No definition found.' &&
+            v.definition !== 'Không tìm thấy trong từ điển.'
+        );
+
+        // Check if user has enough words
+        if (wordsWithDef.length < wordCount) {
+            if (errorEl) {
+                errorEl.textContent = `You need at least ${wordCount} words with definitions in your library. Currently you have ${wordsWithDef.length} word${wordsWithDef.length !== 1 ? 's' : ''}.`;
+                errorEl.style.display = 'block';
+            }
+            return;
+        }
+
+        // Randomly select words
+        const selectedWords = shuffleArray([...wordsWithDef]).slice(0, wordCount);
+
+        // Generate quiz questions
+        const questions = selectedWords.map(wordObj => {
+            const correctAnswer = wordObj.definition;
+
+            // Pick 3 wrong answers from OTHER selected words (not the current one)
+            const otherWords = selectedWords.filter(w => w.id !== wordObj.id);
+            const wrongAnswers = shuffleArray(otherWords)
+                .slice(0, 3)
+                .map(w => w.definition);
+
+            // If we somehow don't have 3 other words, pad with remaining library words
+            if (wrongAnswers.length < 3) {
+                const extraWords = wordsWithDef.filter(w =>
+                    w.id !== wordObj.id && !wrongAnswers.includes(w.definition)
+                );
+                const needed = 3 - wrongAnswers.length;
+                shuffleArray(extraWords).slice(0, needed).forEach(w => {
+                    wrongAnswers.push(w.definition);
+                });
+            }
+
+            // Combine and shuffle all options
+            const allOptions = [correctAnswer, ...wrongAnswers];
+            const shuffledOptions = shuffleArray(allOptions);
+            const correctIndex = shuffledOptions.indexOf(correctAnswer);
+
+            // Build explanation
+            let explanation = `'${wordObj.word}' means ${wordObj.definition}.`;
+            if (wordObj.example && wordObj.example.trim()) {
+                explanation += ` Example: ${wordObj.example}`;
+            }
+
+            return {
+                question: `What is the meaning of '${wordObj.word}'?`,
+                options: shuffledOptions,
+                correct: correctIndex,
+                explanation: explanation
+            };
+        });
+
+        // Create quiz object
+        _quizIdCounter++;
+        const quizId = `quiz_gen_${_quizIdCounter}_${Date.now()}`;
+        const estimatedTime = Math.max(1, Math.ceil(wordCount * 0.5));
+
+        const quiz = {
+            id: quizId,
+            title: `Vocabulary Quiz (${wordCount} words)`,
+            category: 'Library',
+            wordCount: wordCount,
+            duration: `${estimatedTime} mins`,
+            createdAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            questions: questions
+        };
+
+        _generatedQuizzes.unshift(quiz); // Add to top
+        renderQuizCards();
+
+        // Clear error
+        if (errorEl) errorEl.style.display = 'none';
+
+    } catch (err) {
+        console.error('Create quiz error:', err);
+        if (errorEl) {
+            errorEl.textContent = err.message || 'Failed to create quiz. Please try again.';
+            errorEl.style.display = 'block';
+        }
+    } finally {
+        // Restore button
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    }
+}
+
+// ─── Render Quiz Cards ────────────────────────────────────────────────────────
+
+/**
+ * Render all generated quiz cards in the selection grid
+ */
+function renderQuizCards() {
+    const container = document.getElementById('quiz-list-container');
+    if (!container) return;
+
+    if (_generatedQuizzes.length === 0) {
+        container.innerHTML = `
+            <div class="quiz-empty-state">
+                <i class="fa-regular fa-clipboard" style="font-size: 40px; color: #cbd5e1; margin-bottom: 16px;"></i>
+                <p style="font-size: 15px; color: #94a3b8; font-weight: 500;">No quizzes yet.</p>
+                <p style="font-size: 13px; color: #cbd5e1;">Create your first quiz above!</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = _generatedQuizzes.map(quiz => `
+        <div class="quiz-card" data-quiz-id="${quiz.id}">
+            <div class="quiz-card-top-actions">
+                <button class="quiz-delete-btn" data-quiz-id="${quiz.id}" title="Delete quiz">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+            <span class="category-tag">${quiz.category}</span>
+            <h3>${quiz.title}</h3>
+            <p>${quiz.questions.length} multiple-choice questions from your library.</p>
+            <div class="quiz-card-footer">
+                <div class="quiz-card-meta">
+                    <span><i class="fa-regular fa-clock"></i> ${quiz.duration}</span>
+                    <span><i class="fa-solid fa-layer-group"></i> ${quiz.wordCount} words</span>
+                </div>
+                <i class="fa-solid fa-arrow-right" style="color: #3b82f6;"></i>
+            </div>
+        </div>
+    `).join('');
+
+    // Attach click events for starting quiz
+    container.querySelectorAll('.quiz-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Don't start quiz if clicking delete button
+            if (e.target.closest('.quiz-delete-btn')) return;
+            const quizId = card.dataset.quizId;
+            startQuiz(quizId);
+        });
+    });
+
+    // Attach delete events
+    container.querySelectorAll('.quiz-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteQuiz(btn.dataset.quizId);
+        });
+    });
+}
+
+/**
+ * Delete a quiz card with animation
+ */
+function deleteQuiz(quizId) {
+    const card = document.querySelector(`.quiz-card[data-quiz-id="${quizId}"]`);
+    if (card) {
+        card.style.transition = 'opacity 0.3s, transform 0.3s';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.95)';
+    }
+
+    setTimeout(() => {
+        _generatedQuizzes = _generatedQuizzes.filter(q => q.id !== quizId);
+        renderQuizCards();
+    }, 300);
+}
+
+// ─── Quiz Gameplay ────────────────────────────────────────────────────────────
 
 /**
  * Start a specific quiz
  */
 function startQuiz(quizId) {
-    const quiz = MOCK_QUIZZES.find(q => q.id === quizId);
+    const quiz = _generatedQuizzes.find(q => q.id === quizId);
     if (!quiz) return;
 
     AppState.currentQuiz = quiz;
@@ -240,7 +327,7 @@ function renderQuestion() {
     question.options.forEach((opt, index) => {
         const div = document.createElement('div');
         div.className = 'quiz-option';
-        div.innerHTML = `<span>${opt}</span><i class="fa-regular fa-circle"></i>`;
+        div.innerHTML = `<span>${escapeHtmlQuiz(opt)}</span><i class="fa-regular fa-circle"></i>`;
         div.addEventListener('click', () => selectOption(div, index));
         optionsList.appendChild(div);
     });
@@ -362,4 +449,28 @@ function showQuizView(view) {
         const el = document.getElementById(`quiz-view-${v}`);
         if (el) el.style.display = (v === view) ? 'block' : 'none';
     });
+}
+
+// ─── Utility Functions ────────────────────────────────────────────────────────
+
+/**
+ * Fisher-Yates shuffle
+ */
+function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+/**
+ * Simple HTML escape for quiz content
+ */
+function escapeHtmlQuiz(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
