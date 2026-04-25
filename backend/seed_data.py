@@ -10,6 +10,8 @@ import mysql.connector
 import uuid
 import os
 import bcrypt
+import requests
+import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from config.database import DB_CONFIG
@@ -18,6 +20,54 @@ from config.database import DB_CONFIG
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 load_dotenv()
+
+
+def fetch_word_data(word):
+    """Goi API de lay phonetic, definition, example, vietnamese cho 1 tu."""
+    phonetic = ""
+    definition = ""
+    example = ""
+    vietnamese = ""
+
+    # 1. Dictionary API
+    try:
+        resp = requests.get(
+            f"https://api.dictionaryapi.dev/api/v2/entries/en/{requests.utils.quote(word)}",
+            timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if data and len(data) > 0:
+                entry = data[0]
+                # Phonetic
+                for p in entry.get("phonetics", []):
+                    if p.get("text"):
+                        phonetic = p["text"]
+                        break
+                # Definition + Example
+                meanings = entry.get("meanings", [])
+                if meanings:
+                    defs = meanings[0].get("definitions", [])
+                    if defs:
+                        definition = defs[0].get("definition", "")
+                        example = defs[0].get("example", "")
+    except Exception as e:
+        print(f"     [WARN] Dictionary API failed for '{word}': {e}")
+
+    # 2. MyMemory Translation API (EN -> VI)
+    try:
+        resp = requests.get(
+            f"https://api.mymemory.translated.net/get?q={requests.utils.quote(word)}&langpair=en|vi",
+            timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get("responseStatus") == 200:
+                vietnamese = data.get("responseData", {}).get("translatedText", "")
+    except Exception as e:
+        print(f"     [WARN] MyMemory API failed for '{word}': {e}")
+
+    return phonetic, definition, example, vietnamese
 
 
 def seed():
@@ -170,21 +220,8 @@ def seed():
         # ========================================
         print("[*] Dang tao vocabularies...")
         vocabularies = [
-            # User 1 - tu vung tu nhieu bai viet
-            (user1_id, "hamstring", article_ids[0]),
-            (user1_id, "injury", article_ids[0]),
-            (user1_id, "defender", article_ids[0]),
-            (user1_id, "re-election", article_ids[1]),
-            (user1_id, "emphasize", article_ids[1]),
-            (user1_id, "eliminate", article_ids[2]),
-            (user1_id, "tactical", article_ids[2]),
-            (user1_id, "productivity", article_ids[3]),
-            (user1_id, "collaboration", article_ids[3]),
-            (user1_id, "algorithm", article_ids[4]),
-            (user1_id, "unprecedented", article_ids[4]),
-            (user1_id, "ceremony", article_ids[5]),
-            (user1_id, "harmony", article_ids[5]),
-            # User 2 - tu vung khac
+            # User 1 - bat dau voi library rong (tu vung se duoc luu tu bai viet)
+            # User 2 - tu vung mau
             (user2_id, "infrastructure", article_ids[6]),
             (user2_id, "transition", article_ids[6]),
             (user2_id, "incentive", article_ids[7]),
@@ -196,12 +233,16 @@ def seed():
         ]
         for user_id, word, art_id in vocabularies:
             vocab_id = str(uuid.uuid4())
+            print(f"     Fetching data for '{word}'...")
+            phonetic, definition, example, vietnamese = fetch_word_data(word)
             cursor.execute(
-                "INSERT INTO vocabularies (id, user_id, word, article_id) VALUES (%s, %s, %s, %s)",
-                (vocab_id, user_id, word, art_id),
+                """INSERT INTO vocabularies (id, user_id, word, article_id, phonetic, definition, example, vietnamese)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (vocab_id, user_id, word, art_id, phonetic, definition, example, vietnamese),
             )
+            time.sleep(0.3)  # Rate limit: tranh spam API
         conn.commit()
-        print(f"   [OK] Tao {len(vocabularies)} tu vung cho 2 users")
+        print(f"   [OK] Tao {len(vocabularies)} tu vung voi du lieu tu API")
 
         # ========================================
         # 5. TAO QUIZ QUESTIONS (20 cau)

@@ -11,6 +11,7 @@ class VocabCreateRequest(BaseModel):
     phonetic: Optional[str] = None
     definition: Optional[str] = None
     example: Optional[str] = None
+    vietnamese: Optional[str] = None
 
 
 class VocabResponse(BaseModel):
@@ -19,6 +20,7 @@ class VocabResponse(BaseModel):
     phonetic: Optional[str] = None
     definition: Optional[str] = None
     example: Optional[str] = None
+    vietnamese: Optional[str] = None
     article_id: Optional[str] = None
     article_title: Optional[str] = None
     created_at: Optional[str] = None

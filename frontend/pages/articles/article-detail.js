@@ -11,8 +11,8 @@ let _currentPopupExample = null;
 let _currentPopupVietnamese = null;
 let _popupAudioUrl = null;
 let _currentHoveredWord = null;   // từ đang hover, tránh gọi API trùng lặp
-let _showPopupTimer   = null;     // delay trước khi hiện popup (tránh flash khi di nhanh)
-let _hidePopupTimer   = null;     // grace period trước khi ẩn popup
+let _showPopupTimer = null;     // delay trước khi hiện popup (tránh flash khi di nhanh)
+let _hidePopupTimer = null;     // grace period trước khi ẩn popup
 
 // ─── Render article ──────────────────────────────────────────────────────────
 function renderArticleDetail() {
@@ -131,11 +131,11 @@ function positionPopupNearElement(el) {
     const popup = document.getElementById('vocab-popup');
     if (!popup) return;
 
-    const rect   = el.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     const popupW = 340;           // matches CSS min-width
     const popupH = popup.offsetHeight || 300;
     const margin = 12;            // gap between word and popup edge
-    const pad    = 12;            // minimum clearance from viewport edges
+    const pad = 12;            // minimum clearance from viewport edges
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -158,7 +158,7 @@ function positionPopupNearElement(el) {
     // Suppress CSS transition during reposition so there's no slide/jitter
     // when called a 2nd time after API data loads and changes popup height.
     popup.style.transition = 'none';
-    popup.style.top  = `${top}px`;
+    popup.style.top = `${top}px`;
     popup.style.left = `${left}px`;
 
     // Re-enable transition on next paint, then reveal via .show
@@ -301,9 +301,10 @@ async function lookupWord(word, sourceEl) {
     if (exampleEl) exampleEl.textContent = '';
     if (vietnameseEl) vietnameseEl.textContent = 'Đang dịch…';
     if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.style.background = '';
-        saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+        saveBtn.disabled = true;
+        saveBtn.style.background = '#94a3b8';
+        saveBtn.style.cursor = 'not-allowed';
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…';
     }
 
     // Show popup positioned at the hovered word
@@ -364,6 +365,14 @@ async function lookupWord(word, sourceEl) {
         if (vietnameseEl) vietnameseEl.textContent = '(không dịch được)';
     }
 
+    // ── Enable save button now that data is loaded ─────────────────────────
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.style.background = '';
+        saveBtn.style.cursor = '';
+        saveBtn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Save to Dictionary';
+    }
+
     // Re-position after content loaded (height may have changed)
     if (sourceEl && _currentHoveredWord === word) positionPopupNearElement(sourceEl);
 }
@@ -389,6 +398,7 @@ async function saveCurrentWordToDictionary() {
                 phonetic: _currentPopupPhonetic || '',
                 definition: _currentPopupDefinition || '',
                 example: _currentPopupExample || '',
+                vietnamese: _currentPopupVietnamese || '',
             }),
         });
 

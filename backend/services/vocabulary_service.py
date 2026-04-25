@@ -17,8 +17,9 @@ def get_user_vocab(user_id: int, conn):
 
 
 def save_word(user_id: int, word: str, article_id: str, conn,
-              phonetic: str = None, definition: str = None, example: str = None):
-    """Lưu từ vựng mới cho user (bao gồm phonetic, definition, example)."""
+              phonetic: str = None, definition: str = None, example: str = None,
+              vietnamese: str = None):
+    """Lưu từ vựng mới cho user (bao gồm phonetic, definition, example, vietnamese)."""
     if not word or not word.strip():
         raise ValueError("Word cannot be empty.")
 
@@ -30,7 +31,8 @@ def save_word(user_id: int, word: str, article_id: str, conn,
 
     vocab_id = vocabulary_repository.create(
         conn, user_id, word, article_id,
-        phonetic=phonetic, definition=definition, example=example
+        phonetic=phonetic, definition=definition, example=example,
+        vietnamese=vietnamese
     )
     return {"success": True, "message": f"'{word}' saved to your dictionary.", "id": vocab_id}
 

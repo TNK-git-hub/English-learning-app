@@ -1,32 +1,35 @@
 /**
  * Vocabulary Service — API calls cho từ vựng
- * [MỚI] Chưa có API backend, sẽ implement sau
+ * Kết nối với backend API /api/vocabulary
  */
 
 /**
- * Lấy danh sách từ vựng đã lưu
- * @returns {Promise<Array>}
+ * Lấy danh sách từ vựng đã lưu của user hiện tại
+ * @returns {Promise<object>} { success, data, total }
  */
 async function fetchVocabularyAPI() {
-    // TODO: Implement khi có backend API
-    return [];
+    return apiFetch('/api/vocabulary');
 }
 
 /**
  * Lưu từ vựng mới
- * @param {object} wordData - { word, meaning, example, pronunciation }
+ * @param {object} wordData - { word, article_id, phonetic, definition, example }
  * @returns {Promise<object>}
  */
 async function saveVocabularyAPI(wordData) {
-    // TODO: Implement khi có backend API
-    return wordData;
+    return apiFetch('/api/vocabulary', {
+        method: 'POST',
+        body: JSON.stringify(wordData),
+    });
 }
 
 /**
- * Xóa từ vựng
- * @param {number} vocabId
- * @returns {Promise<void>}
+ * Xóa từ vựng theo ID
+ * @param {string} vocabId
+ * @returns {Promise<object>}
  */
 async function deleteVocabularyAPI(vocabId) {
-    // TODO: Implement khi có backend API
+    return apiFetch(`/api/vocabulary/${vocabId}`, {
+        method: 'DELETE',
+    });
 }

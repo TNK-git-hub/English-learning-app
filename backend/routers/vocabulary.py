@@ -25,7 +25,7 @@ def save_word(
     current_user=Depends(get_current_user),
     conn=Depends(get_db)
 ):
-    """Lưu từ vựng mới kèm definition, phonetic, example."""
+    """Lưu từ vựng mới kèm definition, phonetic, example, vietnamese."""
     return vocabulary_service.save_word(
         current_user["sub"],
         request.word,
@@ -34,6 +34,7 @@ def save_word(
         phonetic=request.phonetic,
         definition=request.definition,
         example=request.example,
+        vietnamese=request.vietnamese,
     )
 
 

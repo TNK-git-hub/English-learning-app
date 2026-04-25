@@ -11,7 +11,7 @@ def find_by_user(conn, user_id: int) -> List[Dict]:
     try:
         cursor.execute("""
             SELECT v.id, v.word, v.phonetic, v.definition, v.example,
-                   v.article_id, v.created_at,
+                   v.vietnamese, v.article_id, v.created_at,
                    a.title AS article_title
             FROM vocabularies v
             LEFT JOIN articles a ON v.article_id = a.id
@@ -34,15 +34,16 @@ def find_by_id(conn, vocab_id: str) -> Optional[Dict]:
 
 
 def create(conn, user_id: int, word: str, article_id: str = None,
-           phonetic: str = None, definition: str = None, example: str = None) -> str:
+           phonetic: str = None, definition: str = None, example: str = None,
+           vietnamese: str = None) -> str:
     """Lưu từ vựng mới, trả về ID (UUID)."""
     cursor = conn.cursor()
     try:
         vocab_id = str(uuid.uuid4())
         cursor.execute(
-            """INSERT INTO vocabularies (id, user_id, word, article_id, phonetic, definition, example)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (vocab_id, user_id, word, article_id, phonetic, definition, example)
+            """INSERT INTO vocabularies (id, user_id, word, article_id, phonetic, definition, example, vietnamese)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+            (vocab_id, user_id, word, article_id, phonetic, definition, example, vietnamese)
         )
         conn.commit()
         return vocab_id
