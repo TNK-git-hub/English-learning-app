@@ -1681,15 +1681,15 @@ body {
     background-color: #eff6ff;
 }
 
-/* Interactive Popups */
+/* Interactive Popups — position:fixed so JS viewport coords (getBoundingClientRect) work correctly */
 .interactive-popup {
-    position: absolute;
+    position: fixed;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
     padding: 24px;
-    z-index: 1000;
+    z-index: 9999;
     width: 340px;
     opacity: 0;
     pointer-events: none;
