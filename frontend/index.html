@@ -51,10 +51,10 @@
                     <input type="text" placeholder="Search articles or authors...">
                 </div>
                 <nav class="main-nav">
-                    <a href="#" id="nav-dash-articles">Articles</a>
-                    <a href="#" id="nav-dash-library">Library</a>
-                    <a href="#" id="nav-dash-quiz">Quiz</a>
-                    <a href="#" class="active" id="nav-dash-dashboard">Dashboard</a>
+                    <a href="#" id="nav-dash-articles"><i class="fa-solid fa-newspaper"></i> <span>Articles</span></a>
+                    <a href="#" id="nav-dash-library"><i class="fa-solid fa-book-bookmark"></i> <span>Library</span></a>
+                    <a href="#" id="nav-dash-quiz"><i class="fa-solid fa-gamepad"></i> <span>Quiz</span></a>
+                    <a href="#" class="active" id="nav-dash-dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
                 </nav>
                 <div class="user-profile-dropdown">
                     <div class="user-profile-toggle" title="Account menu">
@@ -92,7 +92,7 @@
 
                 <!-- OVERVIEW TAB -->
                 <div id="dash-view-overview" class="dash-content-view active">
-                    <div class="dash-grid-overview" style="display: grid; grid-template-columns: 320px 1fr; gap: 24px;">
+                    <div class="dash-grid-overview">
                         <!-- Left Column -->
                         <div class="dash-col" style="display: flex; flex-direction: column; gap: 24px;">
                             <!-- Daily Goal -->
@@ -184,8 +184,7 @@
                             <h3 class="section-title"
                                 style="margin-top: 32px; margin-bottom: 16px; font-size: 18px; color: #0f172a;">Continue
                                 Learning</h3>
-                            <div class="continue-grid" id="dash-continue-learning-grid"
-                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="continue-grid" id="dash-continue-learning-grid">
                                 <div class="dash-continue-card">
                                     <div class="continue-tag"><i class="fa-solid fa-book-open"></i> LESSON</div>
                                     <h4 class="truncate-1">Advanced Business Idioms</h4>
@@ -205,7 +204,7 @@
 
                 <!-- MY GOALS TAB -->
                 <div id="dash-view-goals" class="dash-content-view" style="display: none;">
-                    <div class="dash-grid-goals" style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+                    <div class="dash-grid-goals">
                         <!-- Left Column: Goals -->
                         <div class="dash-col" style="display: flex; flex-direction: column; gap: 20px;">
                             <!-- Daily Vocab Goal -->
